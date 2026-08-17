@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👕 Tekstil Stok Takibi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="tekstil.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">👕 Tekstil Stok Takibi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-tekstil">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>👕 Tekstil Stok Takibi</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="tekstil-count">0 çeşit, 0 adet</span>
+            </div>
+
+            <!-- Kategori yönetimi -->
+            <div class="form-row">
+                <input type="text" id="new-tekstil-brand" placeholder="Örn: Nike, LC Waikiki...">
+                <button class="btn-action btn-primary" onclick="addTekstilCategory('brand')">+ Marka Ekle</button>
+            </div>
+            <div class="category-tags" id="tekstil-brand-list"></div>
+
+            <div class="form-row">
+                <input type="text" id="new-tekstil-size" placeholder="Örn: S, M, L, 38, 40...">
+                <button class="btn-action btn-primary" onclick="addTekstilCategory('size')">+ Boy/Beden Ekle</button>
+            </div>
+            <div class="category-tags" id="tekstil-size-list"></div>
+
+            <div class="form-row">
+                <input type="text" id="new-tekstil-season" placeholder="Örn: Yaz, Kış, Dört Mevsim...">
+                <button class="btn-action btn-primary" onclick="addTekstilCategory('season')">+ Mevsim Ekle</button>
+            </div>
+            <div class="category-tags" id="tekstil-season-list"></div>
+
+            <div class="form-row">
+                <input type="text" id="new-tekstil-variant" placeholder="Örn: Şapka, Çorap, Tişört, Eşofman...">
+                <button class="btn-action btn-primary" onclick="addTekstilCategory('variant')">+ Varyant Ekle</button>
+            </div>
+            <div class="category-tags" id="tekstil-variant-list"></div>
+
+            <!-- Ürün ekleme formu -->
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="tekstil-brand"></select>
+                    <select id="tekstil-size"></select>
+                </div>
+                <div class="form-row">
+                    <select id="tekstil-season"></select>
+                    <select id="tekstil-variant"></select>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="tekstil-price" placeholder="Fiyat (₺)">
+                    <input type="text" id="tekstil-stock" placeholder="Stok adedi" value="1">
+                </div>
+                <button class="btn-action btn-primary" onclick="addTekstilProduct()">Ürün Ekle</button>
+            </div>
+
+            <!-- Ürün listesi -->
+            <div class="recipe-list" id="tekstil-list"></div>
+
+            <!-- Marka bazlı özet -->
+            <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">Marka Bazlı Özet</h3>
+            <div id="tekstil-brand-summary"></div>
+
+            <!-- Genel toplam -->
+            <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); font-weight:600;" id="tekstil-total">
+                Toplam Ürün: 0 adet — Toplam Değer: 0 ₺
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="tekstil.js"></script>
+    <script>
+        function renderModule() {
+            renderTekstil()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

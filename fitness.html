@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💪 Fitness Takibi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="fitness.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">💪 Fitness Takibi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-fitness">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>💪 Fitness Takibi</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="fitness-count">0 kayıt</span>
+            </div>
+
+            <!-- Kategori yönetimi -->
+            <div class="form-row">
+                <input type="text" id="new-fitness-cat" placeholder="Örn: Bacak, Sırt, Kardiyo...">
+                <button class="btn-action btn-primary" onclick="addFitnessCategory()">+ Branş Ekle</button>
+            </div>
+            <div class="category-tags" id="fitness-categories-list"></div>
+
+            <!-- Kayıt ekleme formu -->
+            <div class="recipe-form">
+                <input type="text" id="fitness-title" placeholder="Başlık (hareket/antrenman adı)">
+                <textarea id="fitness-content" placeholder="İçerik detayı (notlar, teknik ipuçları...)"></textarea>
+                <div class="form-row">
+                    <input type="number" id="fitness-sets" placeholder="Set">
+                    <input type="number" id="fitness-reps" placeholder="Tekrar">
+                    <input type="text" id="fitness-weight" placeholder="Ağırlık (kg, opsiyonel)">
+                </div>
+                <input type="text" id="fitness-youtube" placeholder="YouTube linki (opsiyonel)">
+                <select id="fitness-cat"></select>
+                <button class="btn-action btn-primary" id="fitness-save-btn" onclick="saveFitnessItem()">Kaydet</button>
+            </div>
+
+            <!-- Kayıt listesi -->
+            <div class="recipe-list" id="fitness-list"></div>
+
+            <!-- Vücut Ölçüleri Takibi -->
+            <div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border-color);">
+                <h3 style="margin-bottom:8px;">📏 Vücut Ölçüleri Takibi</h3>
+                <div class="recipe-form">
+                    <div class="form-row">
+                        <input type="date" id="measure-date">
+                        <input type="text" id="measure-weight" placeholder="Kilo (kg)">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="measure-waist" placeholder="Bel (cm, opsiyonel)">
+                        <input type="text" id="measure-chest" placeholder="Göğüs (cm, opsiyonel)">
+                        <input type="text" id="measure-arm" placeholder="Kol (cm, opsiyonel)">
+                    </div>
+                    <textarea id="measure-note" class="prayer-note" placeholder="Not (opsiyonel)"></textarea>
+                    <button class="btn-action btn-primary" onclick="addMeasurement()">+ Ölçüm Ekle</button>
+                </div>
+                <div id="measure-summary" style="margin-top:10px;"></div>
+                <div id="measure-list" style="margin-top:10px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="fitness.js"></script>
+    <script>
+        function renderModule() {
+            renderFitnessCategories()
+            renderFitnessCategoryOptions()
+            renderFitnessItems()
+            renderMeasurements()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

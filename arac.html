@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚜 Motorlu Araç ve Ekipman Takibi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="arac.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">🚜 Motorlu Araç ve Ekipman Takibi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-arac">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>🚜 Motorlu Araç ve Ekipman Takibi</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="arac-count">0 araç</span>
+            </div>
+
+            <!-- Ana kategori yönetimi -->
+            <div class="form-row">
+                <input type="text" id="new-arac-category" placeholder="Örn: Traktör, Otomobil, Ekipman...">
+                <button class="btn-action btn-primary" onclick="addAracCategory()">+ Kategori Ekle</button>
+            </div>
+            <div class="category-tags" id="arac-category-list"></div>
+
+            <!-- Araç/ekipman ekleme -->
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="arac-item-category"></select>
+                    <input type="text" id="arac-item-name" placeholder="Örn: Deutz Agrolux 70 75hp 4wd 4silindir">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="arac-item-brand" placeholder="Marka (Örn: Deutz-Fahr)">
+                    <input type="text" id="arac-item-model" placeholder="Model (Örn: 7250 TTV Warrior)">
+                    <input type="text" id="arac-item-year" placeholder="Yıl">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="arac-item-price" placeholder="Fiyat (₺)">
+                    <select id="arac-item-status">
+                        <option value="sahip">Elimde Olan</option>
+                        <option value="hedef">Hedef</option>
+                        <option value="bakimda">Bakımda</option>
+                        <option value="satildi">Satıldı</option>
+                        <option value="kiralik">Kiralık Verildi</option>
+                    </select>
+                    <select id="arac-item-color">
+                        <option value="">Renk teması seç...</option>
+                        <option value="kirmizi-gri">🔴 Kırmızı üst / Koyu gri alt</option>
+                        <option value="siyah">⚫ Siyah (traktör orijinal)</option>
+                        <option value="diger">Diğer</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <input type="number" id="arac-item-hours" placeholder="Çalışma saati (opsiyonel)">
+                    <input type="date" id="arac-item-last-maint" title="Son bakım tarihi">
+                    <input type="date" id="arac-item-next-maint" title="Sonraki bakım tarihi">
+                </div>
+                <div class="form-row">
+                    <select id="arac-item-payment">
+                        <option value="pesin">Peşin</option>
+                        <option value="taksit">Taksitli</option>
+                    </select>
+                    <input type="text" id="arac-item-debt" placeholder="Kalan borç (₺, taksitliyse)">
+                    <input type="text" id="arac-item-supplier" placeholder="Bayi / tedarikçi adı">
+                </div>
+                <button class="btn-action btn-primary" onclick="addAracItem()">+ Araç/Ekipman Ekle</button>
+            </div>
+
+            <!-- Kategoriye göre liste -->
+            <div id="arac-list" style="margin-top:6px;"></div>
+
+            <!-- Kategori bazlı özet -->
+            <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">Kategori Bazlı Özet</h3>
+            <div id="arac-category-summary"></div>
+
+            <!-- Genel toplam -->
+            <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); font-weight:600;" id="arac-total">
+                Elimde Olan Toplam Değer: 0 ₺ — Hedef Toplam Değer: 0 ₺
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="arac.js"></script>
+    <script>
+        function renderModule() {
+            renderArac()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

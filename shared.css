@@ -1,0 +1,641 @@
+
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --surface-hover: #2a2a2a;
+            --border-color: #333333;
+            --text-main: #e0e0e0;
+            --text-muted: #aaaaaa;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --accent-blue: #3498db;
+            --accent-gold: #f1c40f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-area h1 {
+            font-size: 1.4rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .badge-time {
+            background-color: rgba(52, 152, 219, 0.15);
+            color: var(--accent-blue);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .quick-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--surface-hover);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .stat-card span {
+            font-weight: bold;
+            color: var(--accent-green);
+            margin-left: 5px;
+        }
+
+        .search-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding: 0 20px;
+        }
+
+        .search-area input {
+            width: 100%;
+            max-width: 360px;
+            background: var(--surface-hover);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .search-area input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .search-area input::placeholder {
+            color: var(--text-muted);
+        }
+
+        main {
+            padding: 16px 20px;
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            /* grid-auto-rows: min-content + align-items: start = her modül SADECE kendi
+               içeriği kadar yer kaplar; aynı satırdaki en uzun modüle göre gereksiz yere
+               esnetilmez. Büyük/boş boşlukların asıl sebebi buydu. */
+            grid-auto-rows: min-content;
+            align-items: start;
+            gap: 14px;
+        }
+
+        .module-box {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
+            /* Her modül kendi genişlik/yükseklik hesaplamasını bağımsız yapar */
+            width: 100%;
+            min-width: 0; /* içerik (uzun metin/tablo) grid hücresini taşırmasın */
+        }
+
+        .module-box:hover {
+            border-color: #444;
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .module-header h2 {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .module-box.collapsed .toggle-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .module-box.collapsed > *:not(.module-header) {
+            display: none;
+        }
+
+        .module-box.collapsed .module-header {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        /* Table Styling (Excel Like) */
+        .excel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .excel-table th, .excel-table td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .excel-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        .excel-table td input[type="text"], 
+        .excel-table td select {
+            width: 100%;
+            background: #121212;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .excel-table td input:focus, .excel-table td select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        /* Controls: Plus / Minus */
+        .counter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-ctrl {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            transition: opacity 0.1s;
+        }
+
+        .btn-ctrl:active {
+            transform: scale(0.95);
+        }
+
+        .btn-minus {
+            background-color: var(--accent-red);
+        }
+
+        .btn-plus {
+            background-color: var(--accent-green);
+        }
+
+        .counter-value {
+            min-width: 35px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Action Buttons */
+        .btn-action {
+            background-color: var(--surface-hover);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .btn-action:hover {
+            background-color: #333;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            border: none;
+            color: white;
+            font-weight: 500;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        /* Music / Oyun Havaları Player */
+        .playlist {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .song-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface-hover);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+
+        .song-item.playing {
+            border-color: var(--accent-blue);
+            background: rgba(52, 152, 219, 0.08);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .form-row input[type="text"],
+        .form-row select {
+            flex: 1;
+            min-width: 140px;
+            background: #121212;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            text-overflow: ellipsis;
+        }
+
+        .form-row input[type="text"]:focus,
+        .form-row select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .form-row .btn-action {
+            flex-shrink: 0;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Tarif Defteri */
+        .category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .category-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(241, 196, 15, 0.1);
+            border: 1px solid rgba(241, 196, 15, 0.35);
+            color: var(--accent-gold);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .category-tag.type-tag {
+            background: rgba(52, 152, 219, 0.1);
+            border-color: rgba(52, 152, 219, 0.35);
+            color: var(--accent-blue);
+        }
+
+        .category-tag button {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 0.85rem;
+            line-height: 1;
+            opacity: 0.7;
+        }
+
+        .category-tag button:hover {
+            opacity: 1;
+        }
+
+        .recipe-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--surface-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .recipe-form input,
+        .recipe-form textarea,
+        .recipe-form select {
+            width: 100%;
+            background: #121212;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .recipe-form textarea {
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        .recipe-form .form-row select {
+            flex: 1;
+        }
+
+        .recipe-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .recipe-card {
+            background: var(--surface-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px 18px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas:
+                "title actions"
+                "cats actions"
+                "content content"
+                "yt yt"
+                "checks checks";
+            column-gap: 16px;
+            row-gap: 8px;
+            align-items: start;
+            position: relative;
+        }
+
+        .recipe-card .done-check-row { grid-area: checks; }
+
+        .recipe-card.done-today {
+            border-color: var(--accent-green);
+            background: rgba(46, 204, 113, 0.06);
+        }
+
+        .recipe-card h3 {
+            grid-area: title;
+            font-size: 1rem;
+        }
+
+        .recipe-card .recipe-cats {
+            grid-area: cats;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .recipe-card .recipe-content {
+            grid-area: content;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+        }
+
+        .recipe-card a.recipe-yt {
+            grid-area: yt;
+            font-size: 0.8rem;
+            color: var(--accent-red);
+        }
+
+        .recipe-card .recipe-actions {
+            grid-area: actions;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 0;
+        }
+
+        .prayer-card {
+            background: var(--surface-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .prayer-card.done-today {
+            border-color: var(--accent-green);
+            background: rgba(46, 204, 113, 0.06);
+        }
+
+        .prayer-card h3 {
+            font-size: 1rem;
+        }
+
+        .prayer-note {
+            width: 100%;
+            min-height: 60px;
+            background: #121212;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            resize: vertical;
+        }
+
+        .done-check {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .done-check input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .done-check-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .category-tag.lang-tag {
+            background: rgba(46, 204, 113, 0.1);
+            border-color: rgba(46, 204, 113, 0.35);
+            color: var(--accent-green);
+        }
+
+        /* ============================================================
+           RESPONSIVE / MOBİL UYUM KATMANI
+           Not: Aşağıdaki kurallar SADECE yerleşim (layout), boşluk (gap/
+           padding/margin) ve boyutlandırmayı hedefler. Renk paleti,
+           yazı tipi, kenarlık/gölge stilleri ve genel görünüm hiçbir
+           şekilde değiştirilmemiştir; mevcut tasarım birebir korunur.
+           ============================================================ */
+
+        /* Tablet ve küçük ekranlar (~768px altı) */
+        @media (max-width: 768px) {
+            header {
+                flex-wrap: wrap;
+                padding: 12px 16px;
+                gap: 10px;
+            }
+
+            /* Arama kutusu tam genişlik alıp kendi satırına geçsin */
+            .search-area {
+                order: 3;
+                flex: 1 1 100%;
+                padding: 0;
+                max-width: none;
+            }
+
+            .search-area input {
+                max-width: none;
+            }
+
+            .quick-stats {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            main {
+                padding: 12px;
+                gap: 10px;
+                /* auto-fit + minmax sayesinde modüller sığdıkları kadar sütuna yayılır,
+                   sığmıyorsa otomatik olarak tek sütuna iner (aşağıdaki dar ekran kuralı) */
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+
+            .module-box {
+                padding: 12px;
+                gap: 10px;
+                border-radius: 10px;
+            }
+        }
+
+        /* Telefon genişliğinde (~480px altı): modüller kesin olarak tek sütun,
+           tüm boşluklar en sıkışık haline getirilir ("dip dibe" görünüm) */
+        @media (max-width: 480px) {
+            .logo-area h1 {
+                font-size: 1.15rem;
+            }
+
+            main {
+                grid-template-columns: 1fr;
+                padding: 8px;
+                gap: 8px;
+            }
+
+            .module-box {
+                padding: 10px;
+                gap: 8px;
+                border-radius: 8px;
+            }
+
+            .module-header h2 {
+                font-size: 1rem;
+            }
+
+            /* Form satırları dar ekranda alt alta dizilip tam genişlik kaplasın */
+            .form-row input[type="text"],
+            .form-row select {
+                min-width: 100%;
+            }
+
+            /* Genişlik taşırıp yatay kaydırmaya yol açabilecek tabloları
+               kendi ekseninde kaydırılabilir yapıyoruz (tasarım bozulmadan) */
+            .excel-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+    

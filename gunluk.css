@@ -1,0 +1,24 @@
+/* ⏰🔥 Günlük Program & Alışkanlık Takibi modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
+
+.excel-cell {
+    border: 1px solid var(--border-color);
+    transition: background 0.1s ease;
+    font-size: 0.8rem;
+    user-select: none;
+}
+.excel-cell:hover {
+    background: rgba(74, 163, 255, 0.12);
+}
+.excel-cell-done {
+    background: rgba(46, 204, 113, 0.18);
+    color: var(--accent-green);
+    font-weight: 600;
+}
+.excel-table td[contenteditable="true"] {
+    cursor: text;
+}
+.excel-table td[contenteditable="true"]:focus {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: -2px;
+    background: rgba(74, 163, 255, 0.08);
+}

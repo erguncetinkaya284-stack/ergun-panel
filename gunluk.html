@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⏰🔥 Günlük Program & Alışkanlık Takibi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="gunluk.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">⏰🔥 Günlük Program & Alışkanlık Takibi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-gunluk">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>⏰🔥 Günlük Program & Alışkanlık Takibi</h2>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <span style="font-size:0.8rem; color:var(--text-muted);" id="schedule-count">0 madde</span>
+                    <button class="btn-action" onclick="toggleScheduleView()" id="schedule-view-toggle">📊 Çizelge Görünümü</button>
+                </div>
+            </div>
+
+            <!-- Madde ekleme formu -->
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="schedule-source-select" onchange="applyScheduleSourceSelection()"></select>
+                </div>
+                <div class="form-row">
+                    <input type="time" id="schedule-time" placeholder="Saat (opsiyonel)">
+                    <input type="text" id="schedule-name" placeholder="Ne? (örn: Sabah Namazı, Diş Fırçalama, YKS Matematik)">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="schedule-target" placeholder="Günde kaç kez? (örn: 1, 2, 8...)" value="1">
+                    <input type="text" id="schedule-challenge" placeholder="Meydan okuma (opsiyonel, örn: 40 gün)">
+                </div>
+                <button class="btn-action btn-primary" id="schedule-save-btn" onclick="saveScheduleItem()">Kaydet</button>
+            </div>
+
+            <!-- Liste görünümü: saatli program + saatsiz alışkanlıklar -->
+            <div id="schedule-list-section">
+                <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">🕐 Saatli Program</h3>
+                <div class="recipe-list" id="schedule-timed-list"></div>
+
+                <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">🔥 Saatsiz Alışkanlıklar</h3>
+                <div class="recipe-list" id="schedule-untimed-list"></div>
+            </div>
+
+            <!-- Çizelge (tablo) görünümü -->
+            <div id="schedule-table-wrap" style="display:none;"></div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="gunluk.js"></script>
+    <script>
+        function renderModule() {
+            renderSchedule()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

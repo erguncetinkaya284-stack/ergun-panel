@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💻 Teknoloji Çantası - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="teknoloji.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">💻 Teknoloji Çantası</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-teknoloji">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>💻 Teknoloji Çantası</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="teknoloji-count">0 cihaz</span>
+            </div>
+
+            <div class="form-row">
+                <input type="text" id="new-teknoloji-category" placeholder="Örn: Laptop, Telefon, Kamera, Drone...">
+                <button class="btn-action btn-primary" onclick="addTeknolojiCategory()">+ Kategori Ekle</button>
+            </div>
+            <div class="category-tags" id="teknoloji-category-list"></div>
+
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="teknoloji-item-category"></select>
+                    <input type="text" id="teknoloji-item-name" placeholder="Örn: MacBook Pro M4, iPhone 17 Pro...">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="teknoloji-item-price" placeholder="Fiyat (₺)">
+                    <select id="teknoloji-item-status">
+                        <option value="sahip">Elimde Olan</option>
+                        <option value="hedef">Hedef</option>
+                    </select>
+                </div>
+                <button class="btn-action btn-primary" onclick="addTeknolojiItem()">+ Cihaz Ekle</button>
+            </div>
+
+            <div id="teknoloji-list" style="margin-top:6px;"></div>
+
+            <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">Kategori Bazlı Özet</h3>
+            <div id="teknoloji-category-summary"></div>
+
+            <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); font-weight:600;" id="teknoloji-total">
+                Elimde Olan Toplam Değer: 0 ₺ — Hedef Toplam Değer: 0 ₺
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="teknoloji.js"></script>
+    <script>
+        function renderModule() {
+            renderTeknoloji()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

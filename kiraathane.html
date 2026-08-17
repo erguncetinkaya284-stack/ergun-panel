@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☕ Kıraathane & Satış Yönetimi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="kiraathane.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">☕ Kıraathane & Satış Yönetimi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-kiraathane">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>☕ Kıraathane & Satış Yönetimi</h2>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-action" onclick="undoLastAction()">↩ Geri Al</button>
+                    <button class="btn-action" style="color:var(--accent-red)" onclick="startNewDay()">🔄 Yeni Gün</button>
+                </div>
+            </div>
+
+            <!-- Ürün Kataloğu -->
+            <div style="margin-bottom:16px;">
+                <div class="form-row">
+                    <input type="text" id="catalog-name" placeholder="Ürün adı (Çay, Kahve...)">
+                    <input type="text" id="catalog-price" placeholder="Fiyat (₺)" style="max-width:110px;">
+                    <button class="btn-action btn-primary" onclick="addCatalogProduct()">+ Ürün Ekle</button>
+                </div>
+                <div class="category-tags" id="catalog-list" style="margin-top:8px;"></div>
+                <datalist id="catalog-datalist"></datalist>
+            </div>
+
+            <!-- Yeni ayakta müşteri / masa ekleme -->
+            <div class="form-row" style="margin-bottom:16px;">
+                <input type="text" id="new-standing-name" placeholder="Ayakta müşteri adı">
+                <button class="btn-action btn-primary" onclick="addStandingTab()">+ Ayakta Ekle</button>
+                <input type="text" id="new-table-name" placeholder="Masa adı (Masa 1, Okey Masası...)">
+                <button class="btn-action btn-primary" onclick="addTable()">+ Masa Ekle</button>
+            </div>
+
+            <!-- Ayakta Olanlar -->
+            <h3 style="margin:6px 0; font-size:0.9rem; color:var(--text-muted);">🧍 Ayakta Olanlar</h3>
+            <div class="recipe-list" id="standing-list"></div>
+
+            <!-- Masalar -->
+            <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">🪑 Masalar</h3>
+            <div class="recipe-list" id="tables-list"></div>
+
+            <!-- Genel Toplam -->
+            <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; font-weight:600;">
+                <span>Genel Toplam:</span>
+                <span id="kiraathane-grand-total">0 ₺</span>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="kiraathane.js"></script>
+    <script>
+        function renderModule() {
+            renderKiraathane()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

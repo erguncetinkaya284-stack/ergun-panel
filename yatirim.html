@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>₿ Kripto & Yatırım Takibi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="yatirim.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">₿ Kripto & Yatırım Takibi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-yatirim">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>₿ Kripto & Yatırım Takibi</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="yatirim-count">0 varlık</span>
+            </div>
+
+            <!-- Varlık türü kategori ekleme -->
+            <div class="form-row">
+                <input type="text" id="new-yatirim-category" placeholder="Örn: BTC, ETH, Altın, Hisse...">
+                <button class="btn-action btn-primary" onclick="addYatirimCategory()">+ Varlık Türü Ekle</button>
+            </div>
+            <div class="category-tags" id="yatirim-category-list"></div>
+
+            <!-- Yatırım ekleme formu -->
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="yatirim-item-category"></select>
+                    <input type="text" id="yatirim-item-amount" placeholder="Miktar (adet)">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="yatirim-item-buy-price" placeholder="Alış Fiyatı (birim, ₺)">
+                    <input type="text" id="yatirim-item-current-price" placeholder="Güncel Fiyat (birim, ₺)">
+                </div>
+                <button class="btn-action btn-primary" onclick="addYatirimItem()">+ Yatırım Ekle</button>
+            </div>
+
+            <!-- Yatırım listesi -->
+            <div id="yatirim-list" style="margin-top:6px;"></div>
+
+            <!-- Genel toplam -->
+            <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); font-weight:600;" id="yatirim-total">
+                Toplam Maliyet: 0 ₺ — Güncel Değer: 0 ₺ — Kâr/Zarar: 0 ₺
+            </div>
+
+            <!-- Öğrendiklerim / Notlar -->
+            <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">📝 Öğrendiklerim / Notlarım</h3>
+            <textarea class="prayer-note" id="yatirim-notes" placeholder="Kripto/yatırım hakkında öğrendiklerini buraya not al..." oninput="saveYatirimNotes(this.value)" style="min-height:100px;"></textarea>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="yatirim.js"></script>
+    <script>
+        function renderModule() {
+            renderYatirim()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

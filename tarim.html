@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌾 Tarım Takibi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="tarim.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">🌾 Tarım Takibi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-tarim">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>🌾 Tarım Takibi</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="tarim-count">0 tarla</span>
+            </div>
+
+            <!-- Tarla/Parsel yönetimi -->
+            <h3 style="margin:0 0 6px 0; font-size:0.9rem; color:var(--text-muted);">🗺️ Tarlalar / Parseller</h3>
+            <div class="recipe-form">
+                <div class="form-row">
+                    <input type="text" id="tarla-name" placeholder="Tarla adı (örn: Aşağı Tarla)">
+                    <input type="text" id="tarla-alan" placeholder="Alan (dönüm)">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="tarla-urun" placeholder="Ekili ürün (örn: Buğday)">
+                </div>
+                <button class="btn-action btn-primary" onclick="addTarla()">+ Tarla Ekle</button>
+            </div>
+            <div id="tarla-list" style="display:flex; flex-direction:column; gap:10px; margin-top:6px;"></div>
+
+            <!-- Hasat / Verim Takibi -->
+            <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">🌾 Hasat / Verim Takibi</h3>
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="hasat-tarla"></select>
+                    <input type="text" id="hasat-yil" placeholder="Yıl (örn: 2026)">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="hasat-miktar" placeholder="Hasat miktarı (kg)">
+                    <input type="text" id="hasat-fiyat" placeholder="Satış fiyatı (₺/kg)">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="hasat-masraf" placeholder="Masraf (₺) - opsiyonel">
+                </div>
+                <button class="btn-action btn-primary" onclick="addHasat()">+ Hasat Kaydı Ekle</button>
+            </div>
+            <div id="hasat-list" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;"></div>
+            <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border-color); font-weight:600;" id="hasat-total">
+                Toplam Gelir: 0 ₺ — Toplam Masraf: 0 ₺ — Net Kâr/Zarar: 0 ₺
+            </div>
+
+            <!-- Sulama Takvimi -->
+            <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">💧 Sulama Takvimi</h3>
+            <div id="sulama-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+            <!-- Tohum/Fide Stok Takibi -->
+            <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">🌱 Tohum / Fide Stok Takibi</h3>
+            <div class="form-row">
+                <input type="text" id="new-tohum-type" placeholder="Örn: Buğday tohumu, Domates fidesi...">
+                <button class="btn-action btn-primary" onclick="addTohumType()">+ Çeşit Ekle</button>
+            </div>
+            <div class="category-tags" id="tohum-type-list"></div>
+
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="tohum-stock-type"></select>
+                    <input type="text" id="tohum-stock-miktar" placeholder="Miktar (kg/adet)">
+                </div>
+                <button class="btn-action btn-primary" onclick="addTohumStock()">+ Stok Ekle (Alım)</button>
+            </div>
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="tohum-use-type"></select>
+                    <input type="text" id="tohum-use-miktar" placeholder="Kullanılan miktar (kg/adet)">
+                </div>
+                <button class="btn-action btn-primary" onclick="addTohumUse()">Kullanım Ekle (Ekim)</button>
+            </div>
+            <div id="tohum-summary" style="margin-top:6px;"></div>
+
+            <!-- Resmi Belge / Ruhsat Takibi -->
+            <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">📋 Resmi Belge / Ruhsat Takibi</h3>
+            <div class="recipe-form">
+                <div class="form-row">
+                    <input type="text" id="belge-name" placeholder="Belge adı (örn: ÇKS Kaydı, Sulama İzni, Kira Sözleşmesi)">
+                    <input type="date" id="belge-tarih">
+                </div>
+                <button class="btn-action btn-primary" onclick="addBelge()">+ Belge Ekle</button>
+            </div>
+            <div id="belge-list" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;"></div>
+
+            <!-- Hava Durumu / Don Uyarısı Notu -->
+            <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">🌡️ Hava Durumu / Don Uyarısı Notu</h3>
+            <div class="form-row">
+                <input type="text" id="hava-note" placeholder="Not (örn: Yarın gece don bekleniyor, örtü kapat)">
+                <button class="btn-action btn-primary" onclick="addHavaNote()">+ Not Ekle</button>
+            </div>
+            <div id="hava-list" style="display:flex; flex-direction:column; gap:6px; margin-top:6px;"></div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="tarim.js"></script>
+    <script>
+        function renderModule() {
+            renderTarim()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

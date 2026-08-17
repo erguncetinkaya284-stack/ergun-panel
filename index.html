@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ergün - Entegre Yaşam ve İşletme Paneli</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <h1>Ergün • Entegre Komuta Merkezi</h1>
+            <div class="badge-time">⏰ Sabah 05:00 Sabit Kalkış</div>
+        </div>
+        <div class="search-area">
+            <input type="text" id="global-search" placeholder="🔍 Modüllerde ara..." oninput="filterModules()">
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <div class="quote-banner" id="quote-banner"></div>
+
+    <main>
+        <div class="nav-grid">
+            <a class="nav-card" href="ibadet.html" data-search="🕌 i̇badet takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🕌 İbadet Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Her secde, huzura atılan bir adımdır.”</div>
+            </a>
+            <a class="nav-card" href="gunluk.html" data-search="⏰🔥 günlük program & alışkanlık takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">⏰🔥 Günlük Program & Alışkanlık Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Küçük alışkanlıklar, büyük hayatları inşa eder.”</div>
+            </a>
+            <a class="nav-card" href="fitness.html" data-search="💪 fitness takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">💪 Fitness Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Bugün ter dök, yarın gururlan.”</div>
+            </a>
+            <a class="nav-card" href="spor.html" data-search="🏋️ spor takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🏋️ Spor Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Disiplin, yetenekten daha çok kazandırır.”</div>
+            </a>
+            <a class="nav-card" href="dovus.html" data-search="🥋 dövüş / teknik takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🥋 Dövüş / Teknik Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Her tekrar, ustalığa bir adım daha yaklaştırır.”</div>
+            </a>
+            <a class="nav-card" href="kpss.html" data-search="📚 kpss takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">📚 KPSS Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Bugünün emeği, yarının makamı.”</div>
+            </a>
+            <a class="nav-card" href="yks.html" data-search="🎓 yks takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🎓 YKS Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Bir sayfa daha, hedefe bir adım daha.”</div>
+            </a>
+            <a class="nav-card" href="dil.html" data-search="🌍 yabancı dil takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🌍 Yabancı Dil Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Yeni bir kelime, yeni bir kapı demektir.”</div>
+            </a>
+            <a class="nav-card" href="tarif.html" data-search="👨‍🍳 tarif defteri">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">👨‍🍳 Tarif Defteri</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Emekle pişen yemek, gönülden gönüle gider.”</div>
+            </a>
+            <a class="nav-card" href="enstruman.html" data-search="🎸 enstrüman & ders takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🎸 Enstrüman & Ders Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Her nota, sabrın bir karşılığıdır.”</div>
+            </a>
+            <a class="nav-card" href="tasarim.html" data-search="🎨 tasarım programları öğreniyorum">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🎨 Tasarım Programları Öğreniyorum</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Öğrenmeye devam eden, geride kalmaz.”</div>
+            </a>
+            <a class="nav-card" href="oyun.html" data-search="🎶 oyun havaları & müzik">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🎶 Oyun Havaları & Müzik</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Müzik ruhun dinlenme molasıdır.”</div>
+            </a>
+            <a class="nav-card" href="tarim.html" data-search="🌾 tarım takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🌾 Tarım Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Toprağa emek ver, bereketi bekle.”</div>
+            </a>
+            <a class="nav-card" href="blog.html" data-search="📰 blog">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">📰 Blog</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Yazdığın her satır, düşüncene kalıcılık katar.”</div>
+            </a>
+            <a class="nav-card" href="kitap.html" data-search="📕 kitap">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">📕 Kitap</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Okuyan zihin, hiç durmadan büyür.”</div>
+            </a>
+            <a class="nav-card" href="yazilim.html" data-search="💻 yazılım projeleri">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">💻 Yazılım Projeleri</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Her satır kod, bir problemin çözümüdür.”</div>
+            </a>
+            <a class="nav-card" href="kiraathane.html" data-search="☕ kıraathane & satış yönetimi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">☕ Kıraathane & Satış Yönetimi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Küçük işletme, büyük emekle büyür.”</div>
+            </a>
+            <a class="nav-card" href="cari.html" data-search="📒 cari hesap (müşteri borç/alacak)">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">📒 Cari Hesap (Müşteri Borç/Alacak)</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Düzenli hesap, güvenli ticaret demektir.”</div>
+            </a>
+            <a class="nav-card" href="yatirim.html" data-search="₿ kripto & yatırım takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">₿ Kripto & Yatırım Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Sabırlı yatırımcı, kazanan yatırımcıdır.”</div>
+            </a>
+            <a class="nav-card" href="sut.html" data-search="🥛 süt stok ve satış takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🥛 Süt Stok ve Satış Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Taze takip, taze kazanç getirir.”</div>
+            </a>
+            <a class="nav-card" href="manav.html" data-search="🥬 manav stok ve satış takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🥬 Manav Stok ve Satış Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Bereket, düzenli emekle gelir.”</div>
+            </a>
+            <a class="nav-card" href="et.html" data-search="🥩 et stok ve satış takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🥩 Et Stok ve Satış Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Kaliteli iş, güvenilir takiple olur.”</div>
+            </a>
+            <a class="nav-card" href="tekstil.html" data-search="👕 tekstil stok takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">👕 Tekstil Stok Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Düzenli stok, kesintisiz kazanç demektir.”</div>
+            </a>
+            <a class="nav-card" href="teknoloji.html" data-search="💻 teknoloji çantası">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">💻 Teknoloji Çantası</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Doğru araç, doğru işi kolaylaştırır.”</div>
+            </a>
+            <a class="nav-card" href="arac.html" data-search="🚜 motorlu araç ve ekipman takibi">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🚜 Motorlu Araç ve Ekipman Takibi</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Bakımlı makine, uzun ömürlü yatırımdır.”</div>
+            </a>
+            <a class="nav-card" href="gayrimenkul.html" data-search="🏠 gayrimenkul takibi (500 ev / 500 dükkan)">
+                <div class="nav-card-row">
+                    <div class="nav-card-title">🏠 Gayrimenkul Takibi (500 Ev / 500 Dükkan)</div>
+                    <div class="nav-card-open">Aç →</div>
+                </div>
+                <div class="nav-card-quote">“Bugün ekilen, yarın kira olur.”</div>
+            </a>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

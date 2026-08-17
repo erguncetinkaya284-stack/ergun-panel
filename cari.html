@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📒 Cari Hesap (Müşteri Borç/Alacak) - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="cari.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">📒 Cari Hesap (Müşteri Borç/Alacak)</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-cari">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>📒 Cari Hesap (Müşteri Borç/Alacak)</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="cari-count">0 müşteri</span>
+            </div>
+
+            <div class="form-row">
+                <input type="text" id="new-cari-customer" placeholder="Müşteri adı">
+                <button class="btn-action btn-primary" onclick="addCariCustomer()">+ Müşteri Ekle</button>
+            </div>
+
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="cari-tx-customer"></select>
+                    <select id="cari-tx-type">
+                        <option value="borc">Borçlandırma (Veresiye)</option>
+                        <option value="tahsilat">Tahsilat (Ödeme Alındı)</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="cari-tx-amount" placeholder="Tutar (₺)">
+                    <input type="text" id="cari-tx-note" placeholder="Açıklama (örn: Et alışverişi, Süt borcu, Sebze...)">
+                </div>
+                <button class="btn-action btn-primary" onclick="addCariTx()">+ Kayıt Ekle</button>
+            </div>
+
+            <div id="cari-customer-list" style="display:flex; flex-direction:column; gap:10px; margin-top:6px;"></div>
+
+            <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); font-weight:600;" id="cari-total">
+                Toplam Alacağımız: 0 ₺
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="cari.js"></script>
+    <script>
+        function renderModule() {
+            renderCari()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

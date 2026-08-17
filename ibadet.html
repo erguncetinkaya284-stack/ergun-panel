@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕌 İbadet Takibi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="ibadet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">🕌 İbadet Takibi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-ibadet">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>🕌 İbadet Takibi</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="ibadet-count">Bugün 0/5 vakit</span>
+            </div>
+            <div class="recipe-list" id="ibadet-list"></div>
+
+            <!-- Ramazan Modu -->
+            <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--border-color); display:flex; align-items:center; gap:10px;">
+                <label class="done-check" style="font-weight:600;">
+                    <input type="checkbox" id="ramazan-mode-toggle" onchange="toggleRamazanMode(this.checked)">
+                    🌙 Ramazan Modu (Teravih kartını göster)
+                </label>
+            </div>
+            <div id="teravih-wrap"></div>
+
+            <!-- Kur'an Ezber Takibi -->
+            <div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border-color);">
+                <h3 style="margin-bottom:8px;">📖 Kur'an Ezber Takibi <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(kümülatif tekrar yöntemi)</span></h3>
+                <div class="recipe-form">
+                    <textarea id="quran-durak-input" class="prayer-note" placeholder="Türkçe okunuşunu yaz (Arapça, Latin harfleriyle)..."></textarea>
+                    <textarea id="quran-durak-arabic" class="prayer-note" placeholder="Arapça metni yaz (varsa) — asıl referans budur" dir="rtl" style="font-size:1.1rem;"></textarea>
+                    <input type="text" id="quran-durak-audio" placeholder="Ses linki (opsiyonel — bir hafızın okuduğu YouTube linki vb.)">
+                    <button class="btn-action btn-primary" onclick="addQuranDurak()">+ Yeni Durak Ekle</button>
+                </div>
+                <div id="quran-durak-progress" style="margin-top:12px;"></div>
+                <div id="quran-durak-list" style="margin-top:10px;"></div>
+            </div>
+
+            <!-- Elifba Kitabı -->
+            <div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border-color);">
+                <h3 style="margin-bottom:8px;">📗 Elifba Kitabı <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;" id="elifba-progress-label"></span></h3>
+                <div class="recipe-form">
+                    <input type="text" id="elifba-page-title" placeholder="Sayfa başlığı (Örn: 1. Sayfa - Harfler)">
+                    <textarea id="elifba-page-content" class="prayer-note" placeholder="Sayfa içeriği (harfler, kelimeler, notlar)..."></textarea>
+                    <button class="btn-action btn-primary" onclick="addElifbaPage()">+ Sayfa Ekle</button>
+                </div>
+                <div id="elifba-page-list" style="margin-top:10px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="ibadet.js"></script>
+    <script>
+        function renderModule() {
+            renderIbadet()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏋️ Spor Takibi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="spor.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">🏋️ Spor Takibi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-spor">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>🏋️ Spor Takibi</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="spor-count">0 antrenman</span>
+            </div>
+
+            <!-- Varyant yönetimi -->
+            <div class="form-row">
+                <input type="text" id="new-spor-variant" placeholder="Varyant (örn: Göğüs, Sırt, Bacak, Kardiyo...)">
+                <button class="btn-action btn-primary" onclick="addSporVariant()">+ Varyant Ekle</button>
+            </div>
+            <div class="category-tags" id="spor-variant-list"></div>
+
+            <!-- Antrenman ekleme formu -->
+            <div class="recipe-form">
+                <input type="text" id="spor-title" placeholder="Antrenman adı (örn: Bench Press)">
+                <select id="spor-variant"></select>
+                <textarea id="spor-note" placeholder="Nasıl yapılacağına dair not..."></textarea>
+                <button class="btn-action btn-primary" id="spor-save-btn" onclick="saveSporItem()">Kaydet</button>
+            </div>
+
+            <!-- Antrenman listesi -->
+            <div id="spor-list" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="spor.js"></script>
+    <script>
+        function renderModule() {
+            renderSpor()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

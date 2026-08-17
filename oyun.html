@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎶 Oyun Havaları & Müzik - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="oyun.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">🎶 Oyun Havaları & Müzik</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-oyun">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>🎶 Oyun Havaları & Müzik</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);">Canlı Liste</span>
+            </div>
+            <div class="playlist">
+                <div class="song-item playing">
+                    <span>Ankara Rüzgarı - Hüdayda</span>
+                    <button class="btn-action btn-primary" style="padding: 3px 8px; font-size: 0.75rem;">Çalıyor</button>
+                </div>
+                <div class="song-item">
+                    <span>Misket Havası</span>
+                    <button class="btn-action" style="padding: 3px 8px; font-size: 0.75rem;" onclick="togglePlay(this)">Oynat</button>
+                </div>
+                <div class="song-item">
+                    <span>Sille Oyunu</span>
+                    <button class="btn-action" style="padding: 3px 8px; font-size: 0.75rem;" onclick="togglePlay(this)">Oynat</button>
+                </div>
+                <div class="song-item">
+                    <span>Zeybek Havası</span>
+                    <button class="btn-action" style="padding: 3px 8px; font-size: 0.75rem;" onclick="togglePlay(this)">Oynat</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="oyun.js"></script>
+    <script>
+        function renderModule() { /* bu modülde dinamik render yok */ }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

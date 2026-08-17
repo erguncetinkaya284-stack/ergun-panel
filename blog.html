@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📰 Blog - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="blog.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">📰 Blog</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-blog">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>📰 Blog</h2>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <span style="font-size:0.8rem; color:var(--text-muted);" id="blog-count">0 yazı</span>
+                    <button class="btn-action" onclick="undoBlogAction()">↩ Geri Al</button>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <input type="text" id="new-blog-title" placeholder="Blog başlığı">
+                <button class="btn-action btn-primary" onclick="addBlogPost()">+ Blog Ekle</button>
+            </div>
+
+            <div id="blog-list" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="blog.js"></script>
+    <script>
+        function renderModule() {
+            renderBlog()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

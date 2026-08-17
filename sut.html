@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥛 Süt Stok ve Satış Takibi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="sut.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">🥛 Süt Stok ve Satış Takibi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-sut">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>🥛 Süt Stok ve Satış Takibi</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="sut-count">0 L stok</span>
+            </div>
+
+            <!-- Ürün türü yönetimi -->
+            <div class="form-row">
+                <input type="text" id="new-sut-type" placeholder="Örn: Tam Yağlı Süt, Yoğurt, Peynir, Kaymak...">
+                <button class="btn-action btn-primary" onclick="addSutType()">+ Ürün Türü Ekle</button>
+            </div>
+            <div class="category-tags" id="sut-type-list"></div>
+
+            <!-- Fiyat belirleme -->
+            <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">Fiyat Belirleme (₺/L)</h3>
+            <div class="form-row">
+                <select id="sut-price-type"></select>
+                <input type="text" id="sut-price-value" placeholder="Fiyat (₺/L)">
+                <button class="btn-action btn-primary" onclick="setSutPrice()">Fiyat Güncelle</button>
+            </div>
+
+            <!-- Stok girişi -->
+            <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">Stok Girişi (Alım)</h3>
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="sut-stock-type"></select>
+                    <input type="text" id="sut-stock-litre" placeholder="Litre">
+                </div>
+                <button class="btn-action btn-primary" onclick="addSutStock()">+ Stok Ekle</button>
+            </div>
+
+            <!-- Satış girişi -->
+            <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">Müşteri Satışı</h3>
+            <div class="recipe-form">
+                <div class="form-row">
+                    <select id="sut-sale-type"></select>
+                    <input type="text" id="sut-sale-customer" placeholder="Müşteri adı">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="sut-sale-litre" placeholder="Satılan litre">
+                </div>
+                <button class="btn-action btn-primary" onclick="addSutSale()">Satış Ekle</button>
+            </div>
+
+            <!-- Tür bazlı özet -->
+            <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">Tür Bazlı Durum</h3>
+            <div id="sut-type-summary"></div>
+
+            <!-- Son satışlar -->
+            <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">Son Satışlar</h3>
+            <div id="sut-sales-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+            <!-- Genel toplam -->
+            <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); font-weight:600;" id="sut-total">
+                Toplam Stok: 0 L — Toplam Satış: 0 L
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="sut.js"></script>
+    <script>
+        function renderModule() {
+            renderSut()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>
