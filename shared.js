@@ -87,6 +87,7 @@
             'teknolojiCategories','teknolojiItems','teknolojiItemIdCounter',
             'yazilimCategories','yazilimCategoryIdCounter','yazilimProjects','yazilimProjectIdCounter','yazilimTasks','yazilimTaskIdCounter','yazilimChecklistIdCounter',
             'books','bookIdCounter','bookPageIdCounter',
+            'siirler','siirIdCounter',
             'yatirimCategories','yatirimItems','yatirimItemIdCounter','yatirimNotes',
             'evDoluCount','dukkanDoluCount'
         ];

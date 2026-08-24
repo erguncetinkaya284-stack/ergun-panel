@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✒️ Şiir - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="siir.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">✒️ Şiir</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-siir">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>✒️ Şiir</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="siir-count">0 şiir</span>
+            </div>
+
+            <div class="recipe-form">
+                <input type="text" id="siir-title" placeholder="Şiir başlığı">
+                <input type="text" id="siir-tag" placeholder="Etiket/tema (opsiyonel — örn: hüzün, umut, sabır)">
+                <textarea id="siir-content" placeholder="Şiiri buraya yaz..." style="min-height:160px;"></textarea>
+                <button class="btn-action btn-primary" id="siir-save-btn" onclick="saveSiir()">Kaydet</button>
+            </div>
+
+            <input type="text" id="siir-search" placeholder="🔍 Şiirlerde ara (başlık veya etiket)..." style="margin-top:14px;" oninput="renderSiirList()">
+
+            <div class="recipe-list" id="siir-list" style="margin-top:10px;"></div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="siir.js"></script>
+    <script>
+        function renderModule() {
+            renderSiirList()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>
