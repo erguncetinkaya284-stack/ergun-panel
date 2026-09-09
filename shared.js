@@ -90,8 +90,15 @@
             'siirler','siirIdCounter',
             'suruItems','suruIdCounter','suruTypes',
             'yatirimCategories','yatirimItems','yatirimItemIdCounter','yatirimNotes',
-            'evDoluCount','dukkanDoluCount'
+            'evDoluCount','dukkanDoluCount',
+            'moduleVisibility','moduleOrder'
         ];
+
+        // Ana sayfadaki modül kartlarının hangilerinin görünür olduğu ve hangi sırada
+        // dizileceği — Yönetici panelinden ayarlanır. Varsayılan: hepsi görünür, kod
+        // sırasıyla aynı.
+        let moduleVisibility = {};
+        let moduleOrder = [];
 
         // NOT (çoklu sayfa uyarlaması): Bu sayfada SADECE bu modülün değişkenleri
         // tanımlı olduğu için, önce depodaki TAM yedeği okuyup diğer modüllerin
