@@ -25,8 +25,116 @@
         ];
         let elifbaPageIdCounter = 2;
 
+        // Geçmiş/Takvim/Streak: her gün için hangi vakitlerin kılındığı ayrı ayrı kaydedilir.
+        // { "2026-09-09": { sabah: true, ogle: false, ... }, ... }
+        let prayerHistory = {};
+
+        function ensureHistoryDay(date) {
+            if (!prayerHistory[date]) prayerHistory[date] = {};
+            return prayerHistory[date];
+        }
+
+        function ibadetPastDates(n) {
+            const dates = [];
+            const base = new Date();
+            for (let i = 0; i < n; i++) {
+                const d = new Date(base);
+                d.setDate(d.getDate() - i);
+                dates.push(d.toISOString().slice(0, 10));
+            }
+            return dates;
+        }
+
+        function ibadetDayDoneCount(date) {
+            const day = prayerHistory[date];
+            if (!day) return 0;
+            return PRAYER_TIMES.filter(p => day[p.key] === true).length;
+        }
+
+        function ibadetDayComplete(date) {
+            return ibadetDayDoneCount(date) === PRAYER_TIMES.length;
+        }
+
+        // Bugün henüz bitmediği için, gün tamamlanmamışsa seriyi bozmadan dünden başlar.
+        function ibadetCurrentStreak() {
+            const dates = ibadetPastDates(365);
+            let startIndex = ibadetDayComplete(dates[0]) ? 0 : 1;
+            let streak = 0;
+            for (let i = startIndex; i < dates.length; i++) {
+                if (ibadetDayComplete(dates[i])) streak++;
+                else break;
+            }
+            return streak;
+        }
+
+        function ibadetBestStreak() {
+            const allDates = Object.keys(prayerHistory).sort();
+            let best = 0, current = 0, prevDate = null;
+            allDates.forEach(date => {
+                if (ibadetDayComplete(date)) {
+                    if (prevDate) {
+                        const diffDays = Math.round((new Date(date) - new Date(prevDate)) / 86400000);
+                        current = diffDays === 1 ? current + 1 : 1;
+                    } else {
+                        current = 1;
+                    }
+                    best = Math.max(best, current);
+                    prevDate = date;
+                } else {
+                    current = 0;
+                    prevDate = null;
+                }
+            });
+            return best;
+        }
+
+        function ibadetLast30Ratio() {
+            const dates = ibadetPastDates(30);
+            const total = dates.reduce((sum, d) => sum + ibadetDayDoneCount(d), 0);
+            return Math.round((total / (30 * PRAYER_TIMES.length)) * 100);
+        }
+
+        function renderIbadetCalendar() {
+            const wrap = document.getElementById('ibadet-calendar');
+            if (!wrap) return;
+            const dates = ibadetPastDates(14).reverse();
+            wrap.innerHTML = dates.map(d => {
+                const count = ibadetDayDoneCount(d);
+                let cls = 'cal-day-empty';
+                if (count === PRAYER_TIMES.length) cls = 'cal-day-full';
+                else if (count > 0) cls = 'cal-day-partial';
+                const label = d.slice(8, 10);
+                return `<div class="cal-day ${cls}" title="${d}: ${count}/${PRAYER_TIMES.length} vakit">
+                    <span class="cal-day-num">${label}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function renderIbadetStats() {
+            const wrap = document.getElementById('ibadet-stats');
+            if (!wrap) return;
+            const streak = ibadetCurrentStreak();
+            const best = ibadetBestStreak();
+            const ratio = ibadetLast30Ratio();
+            wrap.innerHTML = `
+                <div class="ibadet-stat-card">
+                    <div class="ibadet-stat-num" style="color:var(--accent-green);">🔥 ${streak}</div>
+                    <div class="ibadet-stat-label">Güncel Seri (gün)</div>
+                </div>
+                <div class="ibadet-stat-card">
+                    <div class="ibadet-stat-num" style="color:var(--accent-blue);">🏆 ${best}</div>
+                    <div class="ibadet-stat-label">En İyi Seri (gün)</div>
+                </div>
+                <div class="ibadet-stat-card">
+                    <div class="ibadet-stat-num" style="color:var(--accent-gold);">${ratio}%</div>
+                    <div class="ibadet-stat-label">Son 30 Gün Oranı</div>
+                </div>`;
+        }
+
         function togglePrayer(key, checked) {
-            prayerData[key].prayedDate = checked ? todayStr() : null;
+            const today = todayStr();
+            prayerData[key].prayedDate = checked ? today : null;
+            ensureHistoryDay(today)[key] = checked;
             renderIbadet();
         }
 
@@ -270,6 +378,8 @@
 
             document.getElementById('ibadet-count').innerText = `Bugün ${doneCount}/5 vakit`;
 
+            renderIbadetStats();
+            renderIbadetCalendar();
             renderTeravihCard();
             renderQuranDurak();
             renderElifba();

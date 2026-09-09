@@ -73,7 +73,7 @@
             'instrumentCategories','lessonCategories','instrumentItems','instrumentIdCounter',
             'fitnessCategories','fitnessItems','fitnessIdCounter','bodyMeasurements','measurementIdCounter',
             'sporVariants','sporItems','sporIdCounter',
-            'prayerData','cumaData','ramazanModeOn','teravihData','quranDuraks','quranDurakIdCounter','quranRepeatCount','elifbaPages','elifbaPageIdCounter',
+            'prayerData','cumaData','ramazanModeOn','teravihData','quranDuraks','quranDurakIdCounter','quranRepeatCount','elifbaPages','elifbaPageIdCounter','prayerHistory',
             'tekstilBrands','tekstilSizes','tekstilSeasons','tekstilVariants','tekstilProducts','tekstilIdCounter',
             'aracCategories','aracItems','aracItemIdCounter',
             'etTypes','etMachines','etMachineIdCounter','etStockMap','etPriceMap','etSales','etSaleIdCounter',
