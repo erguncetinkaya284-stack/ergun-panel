@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐂 Sürü / Besi Takibi - Ergün Panel</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="suru.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1><a href="index.html" style="color:inherit; text-decoration:none;">← Ergün Panel</a></h1>
+            <div class="badge-time">🐂 Sürü / Besi Takibi</div>
+        </div>
+        <div class="quick-stats">
+            <button class="btn-action" onclick="exportAllData()" title="Tüm verileri .json dosyası olarak indir">📤 Dışa Aktar</button>
+            <button class="btn-action" onclick="document.getElementById('import-file-input').click()" title="Daha önce indirdiğin .json dosyasını yükle">📥 İçe Aktar</button>
+            <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importAllData(this.files[0])">
+        </div>
+    </header>
+
+    <main>
+<div class="module-box" id="module-suru">
+            <div class="module-header">
+                <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>🐂 Sürü / Besi Takibi</h2>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="suru-count">0 hayvan sürüde</span>
+            </div>
+
+            <!-- Tür yönetimi -->
+            <div class="form-row">
+                <input type="text" id="new-suru-type" placeholder="Örn: Tosun, Dana, İnek...">
+                <button class="btn-action btn-primary" onclick="addSuruType()">+ Tür Ekle</button>
+            </div>
+            <div class="category-tags" id="suru-type-list"></div>
+
+            <!-- Yeni hayvan girişi -->
+            <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">Sürüye Yeni Hayvan Ekle</h3>
+            <div class="recipe-form">
+                <div class="form-row">
+                    <input type="text" id="suru-new-kupe" placeholder="Küpe No">
+                    <select id="suru-new-tur"></select>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="suru-new-irk" placeholder="Irk (opsiyonel)">
+                    <input type="date" id="suru-new-giris-tarihi">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="suru-new-alis-fiyati" placeholder="Alış Fiyatı (₺)">
+                    <input type="text" id="suru-new-kilo" placeholder="Giriş Kilosu (kg, opsiyonel)">
+                </div>
+                <button class="btn-action btn-primary" onclick="addSuruAnimal()">+ Hayvan Ekle</button>
+            </div>
+
+            <!-- Filtre / arama -->
+            <div class="form-row" style="margin-top:14px;">
+                <input type="text" id="suru-search" placeholder="🔍 Küpe no veya türde ara..." oninput="renderSuruList()">
+                <select id="suru-filter-durum" onchange="renderSuruList()">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="sürüde">Sürüde</option>
+                    <option value="satıldı">Satıldı</option>
+                    <option value="kesildi">Kesildi</option>
+                </select>
+            </div>
+
+            <!-- Hayvan listesi -->
+            <h3 style="margin:14px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">Hayvanlar</h3>
+            <div id="suru-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+            <!-- Genel toplam -->
+            <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); font-weight:600;" id="suru-total">
+                Sürüde: 0 — Çıkış Yapan: 0 — Sürü Alış Değeri: 0 ₺ — Toplam Yem Maliyeti: 0 ₺ — Toplam Çıkış Geliri: 0 ₺
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="suru.js"></script>
+    <script>
+        function renderModule() {
+            renderSuru()
+        }
+
+        window.onload = function() {
+            renderModule();
+            loadAllData()
+                .then(function() { renderModule(); })
+                .catch(function(e) { /* veri yüklenemese bile uygulama boş durumda çalışmaya devam eder */ })
+                .finally(function() { loadModuleStates(); });
+        };
+    </script>
+</body>
+</html>

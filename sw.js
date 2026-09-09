@@ -3,7 +3,7 @@
 // tüm sayfaları önbelleğe alır. Not: veri kaydı zaten localStorage üzerinden çalışıyor,
 // bu dosya sadece sayfaların kendisini (html/css/js) çevrimdışı erişilebilir kılar.
 
-const CACHE_NAME = 'ergun-panel-v1';
+const CACHE_NAME = 'ergun-panel-v2';
 const FILES_TO_CACHE = [
     "./arac.css",
     "./arac.html",
@@ -64,6 +64,9 @@ const FILES_TO_CACHE = [
     "./spor.css",
     "./spor.html",
     "./spor.js",
+    "./suru.css",
+    "./suru.html",
+    "./suru.js",
     "./sut.css",
     "./sut.html",
     "./sut.js",

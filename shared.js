@@ -88,6 +88,7 @@
             'yazilimCategories','yazilimCategoryIdCounter','yazilimProjects','yazilimProjectIdCounter','yazilimTasks','yazilimTaskIdCounter','yazilimChecklistIdCounter',
             'books','bookIdCounter','bookPageIdCounter',
             'siirler','siirIdCounter',
+            'suruItems','suruIdCounter','suruTypes',
             'yatirimCategories','yatirimItems','yatirimItemIdCounter','yatirimNotes',
             'evDoluCount','dukkanDoluCount'
         ];
