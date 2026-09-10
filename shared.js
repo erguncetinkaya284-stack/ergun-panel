@@ -65,7 +65,7 @@
         // Kalıcı olarak saklanacak tüm modül verilerinin (kategoriler, projeler, görevler, satışlar, sayaçlar vb.) listesi
         const ALL_STATE_VARS = [
             'scheduleItems','scheduleIdCounter','scheduleViewMode',
-            'tasarimSubjects','tasarimSubjectIdCounter','tasarimTopics','tasarimTopicIdCounter','tasarimAnlatimlar','tasarimAnlatimIdCounter',
+            'tasarimSubjects','tasarimSubjectIdCounter','tasarimTopics','tasarimTopicIdCounter','tasarimAnlatimlar','tasarimAnlatimIdCounter','tasarimTechniques',
             'productCatalog','catalogIdCounter','salesTables','tableIdCounter','salesTabs','tabIdCounter','itemIdCounter',
             'timeCategories','typeCategories','recipes','recipeIdCounter',
             'langCategories','topicCategories','langItems','langIdCounter',

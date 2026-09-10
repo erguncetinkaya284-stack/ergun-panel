@@ -28,7 +28,16 @@
                 <span style="font-size:0.8rem; color:var(--text-muted);" id="tasarim-count">0 kayıt</span>
             </div>
 
+            <!-- 11 Öğretim Tekniği (modül genelinde ortak liste) -->
+            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;">11 Öğretim Tekniği Listesi</h3>
+            <div class="form-row">
+                <input type="text" id="new-tasarim-technique" placeholder="Örn: Örnekle anlatım, Adım adım uygulama...">
+                <button class="btn-action btn-primary" onclick="addTasarimTechnique()">+ Teknik Ekle</button>
+            </div>
+            <div class="category-tags" id="tasarim-technique-list"></div>
+
             <!-- Ana Başlık: Program (Blender, AutoCAD, Photoshop...) -->
+            <h3 style="font-size:0.85rem; color:var(--text-muted); margin:14px 0 4px 0;">Programlar</h3>
             <div class="form-row">
                 <input type="text" id="new-tasarim-subject" placeholder="Program adı (örn: Blender)">
                 <button class="btn-action btn-primary" onclick="addTasarimSubject()">+ Program Ekle</button>
