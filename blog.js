@@ -1,151 +1,230 @@
-        // ================= BLOG =================
-        const BLOG_PRICE = 50;
-        let blogPosts = []; // {id, title, contents:[{id,text}], saved, reading}
-        let blogIdCounter = 1;
-        let blogContentIdCounter = 1;
+        // ================= BLOG (Ana Başlık -> numaralı Alt Başlık -> açıklama) =================
+        // blog_icerik_prompti.txt yapısına göre: her Ana Başlık bir giriş metni +
+        // numaralandırılmış alt başlık listesi içerir. Alt başlıkların açıklaması
+        // (blog metni) talep üzerine tek tek doldurulur. Tamamlanan her parça ayrı
+        // bir .txt dosyası olarak indirilebilir, ya da tüm konu tek seferde .zip
+        // olarak indirilebilir.
+        let blogTopics = []; // {id, title, giris, altBasliklar:[{id, baslik, aciklama}]}
+        let blogTopicIdCounter = 1;
+        let blogAltIdCounter = 1;
         let blogUndoStack = [];
+        let blogOpenTopicId = null;
 
         function snapshotBlog() {
-            blogUndoStack.push(JSON.stringify({ blogPosts }));
+            blogUndoStack.push(JSON.stringify({ blogTopics }));
             if (blogUndoStack.length > 30) blogUndoStack.shift();
         }
 
         function undoBlogAction() {
             if (!blogUndoStack.length) { alert('Geri alınacak işlem yok.'); return; }
             const prev = JSON.parse(blogUndoStack.pop());
-            blogPosts = prev.blogPosts;
+            blogTopics = prev.blogTopics;
             renderBlog();
         }
 
-        function harvestBlogForm(postId) {
-            const post = blogPosts.find(p => p.id === postId);
-            if (!post) return;
-            const titleEl = document.getElementById('blog-title-' + postId);
-            if (titleEl) post.title = titleEl.value;
-            post.contents.forEach(c => {
-                const el = document.getElementById(`blog-content-${postId}-${c.id}`);
-                if (el) c.text = el.value;
-            });
+        function slugify(text) {
+            return (text || '')
+                .toLocaleLowerCase('tr-TR')
+                .replace(/[^a-zçğıöşü0-9]+/gi, '')
+                .slice(0, 30) || 'konu';
         }
 
-        function harvestAllOpenBlogForms() {
-            blogPosts.forEach(p => { if (!p.saved) harvestBlogForm(p.id); });
+        function findBlogTopic(topicId) {
+            return blogTopics.find(t => t.id === topicId);
         }
 
-        function addBlogPost() {
+        function addBlogTopic() {
             const input = document.getElementById('new-blog-title');
             const title = input.value.trim();
-            if (!title) { alert('Başlık boş olamaz.'); return; }
+            if (!title) { alert('Ana Başlık boş olamaz.'); return; }
             snapshotBlog();
-            blogPosts.push({ id: blogIdCounter++, title, contents: [], saved: false, reading: false });
+            blogTopics.push({ id: blogTopicIdCounter++, title, giris: '', altBasliklar: [] });
             input.value = '';
             renderBlog();
         }
 
-        function addBlogContent(postId) {
-            harvestBlogForm(postId);
+        function removeBlogTopic(topicId) {
+            if (!confirm('Bu Ana Başlık ve tüm alt başlıkları silinecek. Emin misin?')) return;
             snapshotBlog();
-            const post = blogPosts.find(p => p.id === postId);
-            if (!post) return;
-            post.contents.push({ id: blogContentIdCounter++, text: '' });
+            blogTopics = blogTopics.filter(t => t.id !== topicId);
+            if (blogOpenTopicId === topicId) blogOpenTopicId = null;
             renderBlog();
         }
 
-        function removeBlogContent(postId, contentId) {
-            harvestBlogForm(postId);
+        function toggleBlogTopicOpen(topicId) {
+            blogOpenTopicId = (blogOpenTopicId === topicId) ? null : topicId;
+            renderBlog();
+        }
+
+        function saveBlogGiris(topicId) {
+            const topic = findBlogTopic(topicId);
+            if (!topic) return;
+            const el = document.getElementById('blog-giris-' + topicId);
+            if (!el) return;
             snapshotBlog();
-            const post = blogPosts.find(p => p.id === postId);
-            if (!post) return;
-            post.contents = post.contents.filter(c => c.id !== contentId);
+            topic.giris = el.value;
             renderBlog();
         }
 
-        function saveBlogPost(postId) {
-            harvestBlogForm(postId);
+        // Alt başlıkları toplu ekler: textarea'ya her satıra bir başlık yapıştırılır
+        // (AI'ın ürettiği "1.1, 1.2, ... 1.100" listesi gibi düşünülebilir).
+        function bulkAddAltBasliklar(topicId) {
+            const topic = findBlogTopic(topicId);
+            if (!topic) return;
+            const el = document.getElementById('blog-bulk-alt-' + topicId);
+            if (!el) return;
+            const lines = el.value.split('\n')
+                .map(l => l.replace(/^\s*\d+[\.\):]?\s*/, '').trim()) // baştaki "1.", "2)" gibi numaraları temizle
+                .filter(l => l.length > 0);
+            if (!lines.length) { alert('En az bir alt başlık satırı gir.'); return; }
             snapshotBlog();
-            const post = blogPosts.find(p => p.id === postId);
-            if (!post) return;
-            post.saved = true;
+            lines.forEach(baslik => {
+                topic.altBasliklar.push({ id: blogAltIdCounter++, baslik, aciklama: '' });
+            });
+            el.value = '';
             renderBlog();
         }
 
-        function editBlogPost(postId) {
+        function removeAltBaslik(topicId, altId) {
+            const topic = findBlogTopic(topicId);
+            if (!topic) return;
             snapshotBlog();
-            const post = blogPosts.find(p => p.id === postId);
-            if (!post) return;
-            post.saved = false;
+            topic.altBasliklar = topic.altBasliklar.filter(a => a.id !== altId);
             renderBlog();
         }
 
-        function removeBlogPost(postId) {
-            harvestAllOpenBlogForms();
+        function saveAltAciklama(topicId, altId) {
+            const topic = findBlogTopic(topicId);
+            if (!topic) return;
+            const alt = topic.altBasliklar.find(a => a.id === altId);
+            if (!alt) return;
+            const el = document.getElementById(`blog-alt-aciklama-${topicId}-${altId}`);
+            if (!el) return;
             snapshotBlog();
-            blogPosts = blogPosts.filter(p => p.id !== postId);
+            alt.aciklama = el.value;
             renderBlog();
         }
 
-        function toggleBlogReading(postId) {
-            const post = blogPosts.find(p => p.id === postId);
-            if (!post) return;
-            post.reading = !post.reading;
-            renderBlog();
+        function blogAltNo(topic, altId) {
+            const topicNo = blogTopics.findIndex(t => t.id === topic.id) + 1;
+            const altIndex = topic.altBasliklar.findIndex(a => a.id === altId) + 1;
+            return `${topicNo}.${altIndex}`;
         }
 
-        function renderBlogReadingView(post) {
-            const paragraphs = post.contents.filter(c => c.text.trim()).map(c => `
-                <p style="margin:0 0 14px 0; line-height:1.7;">${c.text.replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>
-            `).join('');
-            return `
-            <div style="margin-top:14px; background:#0d0d0d; border:1px solid var(--border-color); border-radius:8px; padding:22px; font-family: Georgia, 'Times New Roman', serif; color:#e8e4da;">
-                <div style="font-size:0.75rem; letter-spacing:2px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:6px;">Ergün Gazetesi</div>
-                <h2 style="font-size:1.6rem; margin:0 0 14px 0; border-bottom:2px solid var(--border-color); padding-bottom:10px;">${post.title}</h2>
-                ${paragraphs || '<p style="color:var(--text-muted); font-family: inherit;">Henüz içerik eklenmedi.</p>'}
-            </div>`;
+        function downloadTextFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
-        function renderBlogEditForm(post) {
-            const contentsHtml = post.contents.map((c, idx) => `
-                <div style="margin-bottom:8px; position:relative;">
-                    <label style="font-size:0.8rem; color:var(--text-muted);">İçerik ${idx + 1}</label>
-                    <textarea class="prayer-note" id="blog-content-${post.id}-${c.id}" placeholder="İçerik metni...">${(c.text || '').replace(/</g, '&lt;')}</textarea>
-                    <button class="btn-action" style="color:var(--accent-red); position:absolute; top:0; right:0; padding:2px 8px;" onclick="removeBlogContent(${post.id}, ${c.id})">✕</button>
-                </div>
-            `).join('');
-
-            return `
-            <div class="prayer-card">
-                <input type="text" id="blog-title-${post.id}" value="${(post.title || '').replace(/"/g, '&quot;')}" placeholder="Blog başlığı" style="width:100%; background:#121212; border:1px solid var(--border-color); color:var(--text-main); padding:8px 10px; border-radius:4px; font-size:1rem; font-weight:600; margin-bottom:10px;">
-                <div>${contentsHtml || '<span style="color:var(--text-muted); font-size:0.8rem;">Henüz içerik bölümü yok.</span>'}</div>
-                <button class="btn-action" style="margin-top:8px;" onclick="addBlogContent(${post.id})">+ İçerik Ekle</button>
-                <button class="btn-action btn-primary" style="margin-top:10px;" onclick="saveBlogPost(${post.id})">Kaydet</button>
-            </div>`;
+        function downloadBlogGiris(topicId) {
+            const topic = findBlogTopic(topicId);
+            if (!topic) return;
+            if (!topic.giris.trim()) { alert('Önce giriş metnini yaz ve kaydet.'); return; }
+            downloadTextFile(`${topic.title} giris.txt`, topic.giris);
         }
 
-        function renderBlogSummary(post) {
-            const readingHtml = post.reading ? renderBlogReadingView(post) : '';
-            const sectionCount = post.contents.filter(c => c.text.trim()).length;
-            return `
-            <div class="prayer-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <strong>📰 ${post.title}</strong>
-                    <span class="category-tag" style="background:rgba(241,196,15,0.15); border-color:rgba(241,196,15,0.4); color:var(--accent-gold);">${BLOG_PRICE} ₺</span>
-                </div>
-                <div style="font-size:0.8rem; color:var(--text-muted);">${sectionCount} bölüm</div>
-                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
-                    <button class="btn-action btn-primary" onclick="toggleBlogReading(${post.id})">${post.reading ? 'Okumayı Kapat' : '📖 Gazete Gibi Oku'}</button>
-                    <button class="btn-action" onclick="editBlogPost(${post.id})">Düzenle</button>
-                    <button class="btn-action" style="color:var(--accent-red)" onclick="removeBlogPost(${post.id})">Sil</button>
-                </div>
-                ${readingHtml}
-            </div>`;
+        function downloadBlogAlt(topicId, altId) {
+            const topic = findBlogTopic(topicId);
+            if (!topic) return;
+            const alt = topic.altBasliklar.find(a => a.id === altId);
+            if (!alt || !alt.aciklama.trim()) { alert('Önce bu alt başlığın açıklamasını yaz ve kaydet.'); return; }
+            const no = blogAltNo(topic, altId);
+            downloadTextFile(`${topic.title} ${no}.${slugify(alt.baslik)}.txt`, alt.aciklama);
+        }
+
+        // Tüm konuyu (giriş + tamamlanmış alt başlıklar) tek bir .zip dosyası olarak indirir.
+        function downloadBlogTopicZip(topicId) {
+            const topic = findBlogTopic(topicId);
+            if (!topic) return;
+            if (typeof JSZip === 'undefined') { alert('Zip kütüphanesi yüklenemedi, internet bağlantını kontrol et.'); return; }
+            const zip = new JSZip();
+            let fileCount = 0;
+            if (topic.giris.trim()) {
+                zip.file(`${topic.title} giris.txt`, topic.giris);
+                fileCount++;
+            }
+            topic.altBasliklar.forEach(alt => {
+                if (alt.aciklama.trim()) {
+                    const no = blogAltNo(topic, alt.id);
+                    zip.file(`${topic.title} ${no}.${slugify(alt.baslik)}.txt`, alt.aciklama);
+                    fileCount++;
+                }
+            });
+            if (!fileCount) { alert('İndirilecek doldurulmuş içerik yok (giriş veya en az bir alt başlık açıklaması gerekli).'); return; }
+            zip.generateAsync({ type: 'blob' }).then(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${topic.title}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
         }
 
         function renderBlog() {
-            harvestAllOpenBlogForms();
             const wrap = document.getElementById('blog-list');
-            wrap.innerHTML = blogPosts.length
-                ? blogPosts.map(p => p.saved ? renderBlogSummary(p) : renderBlogEditForm(p)).join('')
-                : '<span style="color:var(--text-muted); font-size:0.85rem;">Henüz blog eklenmedi.</span>';
-            document.getElementById('blog-count').innerText = blogPosts.length + ' yazı';
-        }
+            const totalAlt = blogTopics.reduce((sum, t) => sum + t.altBasliklar.length, 0);
+            document.getElementById('blog-count').innerText = `${blogTopics.length} ana başlık, ${totalAlt} alt başlık`;
 
+            wrap.innerHTML = blogTopics.length ? blogTopics.map((topic, idx) => {
+                const topicNo = idx + 1;
+                const tamamlanan = topic.altBasliklar.filter(a => a.aciklama.trim()).length;
+                const toplam = topic.altBasliklar.length;
+                const isOpen = blogOpenTopicId === topic.id;
+
+                const altRows = topic.altBasliklar.map(alt => {
+                    const no = `${topicNo}.${topic.altBasliklar.indexOf(alt) + 1}`;
+                    const done = !!alt.aciklama.trim();
+                    return `
+                    <div class="prayer-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                            <strong>${done ? '☑' : '☐'} ${no}. ${alt.baslik}</strong>
+                            <div style="display:flex; gap:4px;">
+                                <button class="btn-action" onclick="downloadBlogAlt(${topic.id}, ${alt.id})">📥</button>
+                                <button class="btn-action" style="color:var(--accent-red)" onclick="removeAltBaslik(${topic.id}, ${alt.id})">Sil</button>
+                            </div>
+                        </div>
+                        <textarea id="blog-alt-aciklama-${topic.id}-${alt.id}" rows="4" placeholder="Bu alt başlığın açıklaması (akıcı blog metni)..." style="width:100%; margin-top:6px;">${alt.aciklama}</textarea>
+                        <button class="btn-action btn-primary" style="margin-top:6px;" onclick="saveAltAciklama(${topic.id}, ${alt.id})">Kaydet</button>
+                    </div>`;
+                }).join('') || '<span style="color:var(--text-muted); font-size:0.85rem;">Henüz alt başlık eklenmedi.</span>';
+
+                return `
+                <div class="prayer-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                        <strong style="cursor:pointer;" onclick="toggleBlogTopicOpen(${topic.id})">${isOpen ? '▼' : '▶'} ${topicNo}. ${topic.title}</strong>
+                        <div style="display:flex; gap:4px; align-items:center;">
+                            <span style="font-size:0.75rem; color:var(--text-muted);">${tamamlanan}/${toplam} tamamlandı</span>
+                            <button class="btn-action" style="color:var(--accent-red)" onclick="removeBlogTopic(${topic.id})">Sil</button>
+                        </div>
+                    </div>
+                    ${isOpen ? `
+                        <div style="margin-top:10px;">
+                            <h4 style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Giriş Metni (3-5 cümle)</h4>
+                            <textarea id="blog-giris-${topic.id}" rows="3" placeholder="Bu konunun genel tanıtımı, neden önemli olduğu, ne bulacağı..." style="width:100%;">${topic.giris}</textarea>
+                            <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
+                                <button class="btn-action btn-primary" onclick="saveBlogGiris(${topic.id})">Girişi Kaydet</button>
+                                <button class="btn-action" onclick="downloadBlogGiris(${topic.id})">📥 Girişi İndir</button>
+                                <button class="btn-action" onclick="downloadBlogTopicZip(${topic.id})">📦 Tümünü .zip İndir</button>
+                            </div>
+
+                            <h4 style="font-size:0.8rem; color:var(--text-muted); margin:14px 0 4px 0;">Alt Başlık Toplu Ekle (her satıra bir başlık)</h4>
+                            <textarea id="blog-bulk-alt-${topic.id}" rows="4" placeholder="Protein&#10;Karbonhidrat&#10;Yağlar&#10;..." style="width:100%;"></textarea>
+                            <button class="btn-action btn-primary" style="margin-top:6px;" onclick="bulkAddAltBasliklar(${topic.id})">+ Alt Başlıkları Ekle</button>
+
+                            <h4 style="font-size:0.8rem; color:var(--text-muted); margin:14px 0 6px 0;">Alt Başlıklar</h4>
+                            <div style="display:flex; flex-direction:column; gap:8px;">${altRows}</div>
+                        </div>
+                    ` : ''}
+                </div>`;
+            }).join('') : '<span style="color:var(--text-muted); font-size:0.85rem;">Henüz Ana Başlık eklenmedi.</span>';
+        }

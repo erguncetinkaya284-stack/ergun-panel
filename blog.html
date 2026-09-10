@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="blog.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
     <header>
@@ -32,8 +33,8 @@
             </div>
 
             <div class="form-row">
-                <input type="text" id="new-blog-title" placeholder="Blog başlığı">
-                <button class="btn-action btn-primary" onclick="addBlogPost()">+ Blog Ekle</button>
+                <input type="text" id="new-blog-title" placeholder="Ana Başlık (örn. Beslenme)">
+                <button class="btn-action btn-primary" onclick="addBlogTopic()">+ Ana Başlık Ekle</button>
             </div>
 
             <div id="blog-list" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
