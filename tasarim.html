@@ -28,33 +28,13 @@
                 <span style="font-size:0.8rem; color:var(--text-muted);" id="tasarim-count">0 kayıt</span>
             </div>
 
-            <!-- Kategori yönetimi -->
+            <!-- Ana Başlık: Program (Blender, AutoCAD, Photoshop...) -->
             <div class="form-row">
-                <input type="text" id="new-tasarim-cat" placeholder="Örn: Photoshop, AutoCAD, Illustrator...">
-                <button class="btn-action btn-primary" onclick="addTasarimCategory('program')">+ Program Ekle</button>
-            </div>
-            <div class="category-tags" id="tasarim-program-list"></div>
-
-            <div class="form-row">
-                <input type="text" id="new-tasarim-topic" placeholder="Örn: Katmanlar, Çizim Komutları, Render...">
-                <button class="btn-action btn-primary" onclick="addTasarimCategory('topic')">+ Konu Ekle</button>
-            </div>
-            <div class="category-tags" id="tasarim-topic-list"></div>
-
-            <!-- Ders ekleme formu -->
-            <div class="recipe-form">
-                <input type="text" id="tasarim-title" placeholder="Başlık (örn: Layer/Katman Kullanımı)">
-                <textarea id="tasarim-content" placeholder="Ders içeriği — o anki yaptığın dersi buraya kopyalayabilirsin..."></textarea>
-                <input type="text" id="tasarim-youtube" placeholder="YouTube linki (opsiyonel)">
-                <div class="form-row">
-                    <select id="tasarim-program-cat"></select>
-                    <select id="tasarim-topic-cat"></select>
-                </div>
-                <button class="btn-action btn-primary" id="tasarim-save-btn" onclick="saveTasarimItem()">Kaydet</button>
+                <input type="text" id="new-tasarim-subject" placeholder="Program adı (örn: Blender)">
+                <button class="btn-action btn-primary" onclick="addTasarimSubject()">+ Program Ekle</button>
             </div>
 
-            <!-- Kayıt listesi -->
-            <div class="recipe-list" id="tasarim-list"></div>
+            <div id="tasarim-subjects-list" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
         </div>
     </main>
 
