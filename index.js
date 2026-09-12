@@ -9,6 +9,7 @@ const MODULES = [
     { key: 'spor', href: 'spor.html', title: '🏋️ Spor Takibi', search: '🏋️ spor takibi', quote: '“Disiplin, yetenekten daha çok kazandırır.”' },
     { key: 'dovus', href: 'dovus.html', title: '🥋 Dövüş / Teknik Takibi', search: '🥋 dövüş / teknik takibi', quote: '“Her tekrar, ustalığa bir adım daha yaklaştırır.”' },
     { key: 'kpss', href: 'kpss.html', title: '📚 KPSS Takibi', search: '📚 kpss takibi', quote: '“Bugünün emeği, yarının makamı.”' },
+    { key: 'ders', href: 'ders.html', title: '📖 Ders Takibi', search: '📖 ders takibi', quote: '“Her ders, bir basamak daha yukarı taşır.”' },
     { key: 'yks', href: 'yks.html', title: '🎓 YKS Takibi', search: '🎓 yks takibi', quote: '“Bir sayfa daha, hedefe bir adım daha.”' },
     { key: 'dil', href: 'dil.html', title: '🌍 Yabancı Dil Takibi', search: '🌍 yabancı dil takibi', quote: '“Yeni bir kelime, yeni bir kapı demektir.”' },
     { key: 'tarif', href: 'tarif.html', title: '👨‍🍳 Tarif Defteri', search: '👨‍🍳 tarif defteri', quote: '“Emekle pişen yemek, gönülden gönüle gider.”' },

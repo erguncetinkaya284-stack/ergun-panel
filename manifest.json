@@ -1,7 +1,7 @@
 {
   "name": "Ergün Panel",
   "short_name": "Ergün Panel",
-  "description": "28 modüllü kişisel ve işletme takip paneli",
+  "description": "29 modüllü kişisel ve işletme takip paneli",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

@@ -80,6 +80,7 @@
             'manavTypes','manavStockMap','manavPriceMap','manavSales','manavSaleIdCounter',
             'sutTypes','sutStockMap','sutPriceMap','sutSales','sutSaleIdCounter',
             'kpssSubjects','kpssSubjectIdCounter','kpssTopics','kpssTopicIdCounter','kpssUnits','kpssUnitIdCounter','kpssQuestionIdCounter','kpssQuizAnswers',
+            'dersSubjects','dersSubjectIdCounter','dersTopics','dersTopicIdCounter','dersUnits','dersUnitIdCounter','dersQuestionIdCounter','dersQuizAnswers',
             'yksSubjects','yksSubjectIdCounter','yksTopics','yksTopicIdCounter','yksUnits','yksUnitIdCounter','yksQuestionIdCounter','yksQuizAnswers',
             'blogTopics','blogTopicIdCounter','blogAltIdCounter',
             'tarlalar','tarlaIdCounter','hasatlar','hasatIdCounter','sulamaMap','tohumTypes','tohumStockMap','tohumUseMap','belgeler','belgeIdCounter','havaNotlari','havaNoteIdCounter',
