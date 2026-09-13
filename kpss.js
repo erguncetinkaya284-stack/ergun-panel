@@ -84,8 +84,10 @@
             });
         }
 
-        function harvestAllOpenKpssUnitForms() {
-            kpssUnits.forEach(u => { if (!u.saved) harvestKpssUnitForm(u.id); });
+        function harvestAllOpenKpssUnitForms(excludeUnitId) {
+            // excludeUnitId: bu ünite az önce programatik olarak güncellendiyse (toplu yapıştırma vb.)
+            // onu tekrar DOM'dan okuyup üzerine ESKİ değerle yazmayı engeller.
+            kpssUnits.forEach(u => { if (!u.saved && u.id !== excludeUnitId) harvestKpssUnitForm(u.id); });
         }
 
         function addKpssQuestion(unitId) {
@@ -94,7 +96,7 @@
             if (unit.questions.length >= 40) { alert('En fazla 40 soru ekleyebilirsin.'); return; }
             harvestKpssUnitForm(unitId);
             unit.questions.push({ id: kpssQuestionIdCounter++, text: '', options: ['', '', '', '', ''], correct: null });
-            renderKpss();
+            renderKpss(unitId);
         }
 
         function removeKpssQuestion(unitId, questionId) {
@@ -102,7 +104,7 @@
             if (!unit) return;
             harvestKpssUnitForm(unitId);
             unit.questions = unit.questions.filter(q => q.id !== questionId);
-            renderKpss();
+            renderKpss(unitId);
         }
 
         function saveKpssUnit(unitId) {
@@ -126,40 +128,68 @@
             const raw = box.value;
             if (!raw.trim()) { alert('Önce soru metnini yapıştır.'); return; }
 
-            const lines = raw.split('\n').map(l => l.trim()).filter(l => l !== '');
-            const optionRegex = /^([A-Ea-e])[\)\.\-]\s*(.+)$/;
-            const answerRegex = /^(cevap|doğru cevap|dogru cevap)\s*[:\-]?/i;
+            // Birden fazla soru "Soru 1.:", "Soru 2.:" gibi başlıklarla ayrılmışsa hepsi ayrı
+            // ayrı ayrıştırılır. Böyle bir başlık yoksa (tek soru yapıştırıldıysa) tüm metin
+            // tek soru sayılır.
+            const blocks = raw.split(/\n(?=\s*Soru\s*\d+\s*[\.:])/i).map(b => b.trim()).filter(b => b);
+            const questionBlocks = blocks.length ? blocks : [raw];
 
-            let questionLines = [];
-            const options = ['', '', '', '', ''];
-            let correct = null;
-            let mode = 'question';
-
-            lines.forEach(line => {
-                if (answerRegex.test(line)) {
-                    const letterMatch = line.match(/[A-Ea-e]/);
-                    if (letterMatch) correct = letterMatch[0].toUpperCase().charCodeAt(0) - 65;
-                    return;
-                }
-                const optMatch = line.match(optionRegex);
-                if (optMatch) {
-                    const idx = optMatch[1].toUpperCase().charCodeAt(0) - 65;
-                    if (idx >= 0 && idx < 5) options[idx] = optMatch[2].trim();
-                    mode = 'options';
-                    return;
-                }
-                if (mode === 'question') questionLines.push(line);
-            });
-
-            const questionText = questionLines.join(' ').trim();
-            if (!questionText) { alert('Soru metni ayrıştırılamadı. Format: önce soru cümlesi, sonra "A) ..." satırları.'); return; }
-
-            harvestKpssUnitForm(unitId);
             const unit = kpssUnits.find(u => u.id === unitId);
             if (!unit) return;
-            unit.questions.push({ id: kpssQuestionIdCounter++, text: questionText, options, correct });
+            harvestKpssUnitForm(unitId);
+
+            const optionRegex = /^([A-Ea-e])[\)\.\-]\s*(.+)$/;
+            const answerRegex = /^(cevap|doğru cevap|dogru cevap)\s*[:\-]?/i;
+            let addedCount = 0;
+            let skippedCount = 0;
+
+            questionBlocks.forEach(blockRaw => {
+                if (unit.questions.length >= 40) { skippedCount++; return; }
+
+                const lines = blockRaw.split('\n').map(l => l.trim()).filter(l => l !== '');
+                let questionLines = [];
+                const options = ['', '', '', '', ''];
+                let correct = null;
+                let mode = 'question';
+
+                lines.forEach(line => {
+                    // "Cevap: B" formatını yakalarken, sadece "cevap" kelimesinin KENDİSİNİ değil
+                    // (içinde 'C' harfi geçiyor ve A-E aralığına yanlışlıkla eşleşiyordu - asıl bug buydu),
+                    // "cevap" ifadesinden SONRA gelen harfi hedefleyen tek bir regex kullanıyoruz.
+                    const answerMatch = line.match(/^(?:cevap|doğru cevap|dogru cevap)\s*[:\-]?\s*([A-Ea-e])/i);
+                    if (answerMatch) {
+                        correct = answerMatch[1].toUpperCase().charCodeAt(0) - 65;
+                        return;
+                    }
+                    const optMatch = line.match(optionRegex);
+                    if (optMatch) {
+                        const idx = optMatch[1].toUpperCase().charCodeAt(0) - 65;
+                        if (idx >= 0 && idx < 5) options[idx] = optMatch[2].trim();
+                        mode = 'options';
+                        return;
+                    }
+                    if (mode === 'question') {
+                        const cleaned = line.replace(/^\s*Soru\s*\d+\s*[\.:]*\s*/i, '').trim();
+                        if (cleaned) questionLines.push(cleaned);
+                    }
+                });
+
+                const questionText = questionLines.join(' ').trim();
+                if (!questionText) return;
+
+                unit.questions.push({ id: kpssQuestionIdCounter++, text: questionText, options, correct });
+                addedCount++;
+            });
+
             box.value = '';
-            renderKpss();
+            if (addedCount === 0) {
+                alert('Hiçbir soru ayrıştırılamadı. Format: her soru "Soru 1.:" ile başlasın, altında A) - E) şıkları ve "Cevap: X" satırı olsun.');
+            } else if (skippedCount > 0) {
+                alert(addedCount + ' soru eklendi. ' + skippedCount + ' soru 40 sınırı nedeniyle eklenemedi.');
+            } else {
+                alert(addedCount + ' soru eklendi.');
+            }
+            renderKpss(unitId);
         }
 
         // --- Toplu yapıştırma: "1. ... 2. ..." biçimindeki tüm teknikleri tek seferde ayrıştırıp doldurma ---
@@ -186,7 +216,7 @@
             }
 
             box.value = '';
-            renderKpss();
+            renderKpss(unitId);
         }
 
         function toggleKpssTechniques(unitId) {
@@ -381,8 +411,8 @@
             </div>`;
         }
 
-        function renderKpss() {
-            harvestAllOpenKpssUnitForms();
+        function renderKpss(excludeUnitId) {
+            harvestAllOpenKpssUnitForms(excludeUnitId);
             const wrap = document.getElementById('kpss-subjects-list');
             wrap.innerHTML = kpssSubjects.length
                 ? kpssSubjects.map(renderKpssSubjectCard).join('')
