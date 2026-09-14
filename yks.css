@@ -1,1 +1,220 @@
 /* 🎓 YKS Takibi modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
+.yks-insights-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12px;
+	margin: 14px 0;
+}
+
+.yks-insight-panel {
+	min-width: 0;
+	padding: 14px;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.025);
+}
+
+.yks-insight-panel h3 {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin: 0 0 12px;
+	font-size: 0.95rem;
+}
+
+.yks-insight-panel h3 span {
+	color: var(--accent-gold);
+	font-size: 0.8rem;
+}
+
+.yks-graph,
+.yks-insight-list {
+	display: grid;
+	gap: 10px;
+}
+
+.yks-graph-row {
+	display: grid;
+	grid-template-columns: minmax(70px, 0.7fr) minmax(80px, 1fr) 38px;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.78rem;
+}
+
+.yks-graph-track {
+	height: 8px;
+	overflow: hidden;
+	border-radius: 99px;
+	background: var(--border-color);
+}
+
+.yks-graph-bar {
+	height: 100%;
+	border-radius: inherit;
+	background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+	transition: width 0.45s ease;
+}
+
+.yks-insight-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.yks-insight-item:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.yks-insight-item strong,
+.yks-insight-item small {
+	display: block;
+}
+
+.yks-insight-item strong {
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.yks-insight-item small {
+	margin-top: 3px;
+	color: var(--text-muted);
+	font-size: 0.7rem;
+}
+
+.yks-insight-item .btn-action {
+	flex-shrink: 0;
+	padding: 4px 8px;
+	font-size: 0.72rem;
+}
+
+.yks-empty-state {
+	color: var(--text-muted);
+	font-size: 0.8rem;
+}
+
+.yks-reader-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: grid;
+	place-items: center;
+	padding: 20px;
+	background: rgba(0, 0, 0, 0.78);
+}
+
+.yks-reader {
+	width: min(700px, 100%);
+	max-height: min(720px, 90vh);
+	overflow: auto;
+	padding: 24px;
+	border: 1px solid var(--accent-gold);
+	border-radius: 10px;
+	background: var(--panel-bg, #1b1b1b);
+	color: var(--text-main);
+	box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+}
+
+.yks-reader-header,
+.yks-reader-controls {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.yks-reader-close {
+	border: 0;
+	background: transparent;
+	color: var(--text-main);
+	font-size: 1.8rem;
+	cursor: pointer;
+}
+
+.yks-reader-progress {
+	margin: 18px 0 12px;
+	color: var(--text-muted);
+	font-size: 0.85rem;
+}
+
+.yks-reader-text {
+	min-height: 180px;
+	padding: 20px;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	white-space: pre-wrap;
+	line-height: 1.65;
+}
+
+.yks-reader-options {
+	display: grid;
+	gap: 8px;
+	margin: 14px 0 22px;
+}
+
+.yks-reader-option {
+	padding: 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.yks-reader-result {
+	margin: 16px 0;
+	color: var(--accent-green);
+	font-weight: 700;
+}
+
+.yks-reader-answer-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin: 14px 0 4px;
+}
+
+.yks-reader-feedback {
+	font-size: 0.85rem;
+	font-weight: 700;
+}
+
+.yks-reader-feedback.is-correct { color: var(--accent-green); }
+.yks-reader-feedback.is-wrong { color: var(--accent-red); }
+
+.yks-subject-card > div:first-child {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.yks-subject-card .toggle-arrow {
+	margin-right: 4px;
+	transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.yks-subject-content {
+	max-height: 2000px;
+	overflow: hidden;
+	opacity: 1;
+	transition: max-height 0.4s ease, opacity 0.25s ease;
+}
+
+.yks-subject-card.collapsed .yks-subject-content {
+	max-height: 0;
+	opacity: 0;
+}
+
+.yks-subject-card.collapsed .toggle-arrow {
+	transform: rotate(-90deg);
+}
+
+.yks-reader-controls { margin-top: 20px; }
+
+@media (max-width: 560px) {
+	.yks-insights-grid { grid-template-columns: 1fr; }
+	.yks-reader { padding: 16px; }
+	.yks-reader-text { min-height: 140px; }
+}
