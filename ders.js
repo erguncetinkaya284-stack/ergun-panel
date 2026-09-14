@@ -12,7 +12,7 @@
             const input = document.getElementById('new-ders-subject');
             const name = input.value.trim();
             if (!name) { alert('Ders adı boş olamaz.'); return; }
-            dersSubjects.push({ id: dersSubjectIdCounter++, name });
+            dersSubjects.push({ id: dersSubjectIdCounter++, name, collapsed: false });
             input.value = '';
             renderDers();
         }
@@ -26,11 +26,32 @@
             renderDers();
         }
 
+        function toggleDersSubjectCollapse(id) {
+            const s = dersSubjects.find(x => x.id === id);
+            if (!s) return;
+            s.collapsed = !s.collapsed;
+            renderDers();
+        }
+
+        function toggleDersTopicCollapse(id) {
+            const t = dersTopics.find(x => x.id === id);
+            if (!t) return;
+            t.collapsed = !t.collapsed;
+            renderDers();
+        }
+
+        function toggleDersUnitCollapse(id) {
+            const u = dersUnits.find(x => x.id === id);
+            if (!u) return;
+            u.collapsed = !u.collapsed;
+            renderDers();
+        }
+
         function addDersTopic(subjectId) {
             const input = document.getElementById('new-ders-topic-' + subjectId);
             const name = input.value.trim();
             if (!name) { alert('Konu adı boş olamaz.'); return; }
-            dersTopics.push({ id: dersTopicIdCounter++, subjectId, name });
+            dersTopics.push({ id: dersTopicIdCounter++, subjectId, name, collapsed: false });
             renderDers();
         }
 
@@ -54,7 +75,8 @@
                 saved: false,
                 showTechniques: false,
                 quizMode: false,
-                quizResult: null
+                quizResult: null,
+                collapsed: false
             });
             input.value = '';
             renderDers();
@@ -346,18 +368,31 @@
         }
 
         function renderDersUnitSummary(unit) {
+            const questionCount = unit.questions.filter(q => q.text.trim()).length;
+            const arrowStyle = unit.collapsed ? 'transform:rotate(-90deg);' : '';
+            const arrowHtml = `<span class="toggle-arrow" style="${arrowStyle}" onclick="toggleDersUnitCollapse(${unit.id})">▶</span>`;
+
+            if (unit.collapsed) {
+                return `
+                <div class="prayer-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                        <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📝 ${unit.name}</strong>
+                        <span style="font-size:0.8rem; color:var(--text-muted);">${questionCount} soru</span>
+                    </div>
+                </div>`;
+            }
+
             const techniquesHtml = unit.showTechniques
                 ? `<div style="display:flex; flex-direction:column; gap:6px; margin-top:8px; border-top:1px solid var(--border-color); padding-top:8px;">
                     ${unit.techniques.map((t, i) => t.trim() ? `<div style="font-size:0.8rem;"><strong>Teknik ${i + 1}:</strong> ${t.replace(/</g, '&lt;')}</div>` : '').join('') || '<span style="color:var(--text-muted); font-size:0.8rem;">Henüz teknik notu girilmedi.</span>'}
                    </div>`
                 : '';
             const quizHtml = unit.quizMode ? renderDersQuiz(unit) : '';
-            const questionCount = unit.questions.filter(q => q.text.trim()).length;
 
             return `
             <div class="prayer-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <strong>📝 ${unit.name}</strong>
+                    <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📝 ${unit.name}</strong>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
                         <button class="btn-action" onclick="toggleDersTechniques(${unit.id})">${unit.showTechniques ? '11 Tekniği Gizle' : '11 Tekniği Oku'}</button>
                         <button class="btn-action btn-primary" onclick="startDersQuiz(${unit.id})">Sınava Başla</button>
@@ -377,10 +412,23 @@
 
         function renderDersTopicCard(topic) {
             const units = dersUnits.filter(u => u.topicId === topic.id);
+            const arrowStyle = topic.collapsed ? 'transform:rotate(-90deg);' : '';
+            const arrowHtml = `<span class="toggle-arrow" style="${arrowStyle}" onclick="toggleDersTopicCollapse(${topic.id})">▶</span>`;
+
+            if (topic.collapsed) {
+                return `
+                <div class="prayer-card" style="border-color:var(--accent-blue);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📂 ${topic.name}</strong>
+                        <span style="font-size:0.8rem; color:var(--text-muted);">${units.length} ders birimi</span>
+                    </div>
+                </div>`;
+            }
+
             return `
             <div class="prayer-card" style="border-color:var(--accent-blue);">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong>📂 ${topic.name}</strong>
+                    <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📂 ${topic.name}</strong>
                     <button class="btn-action" style="color:var(--accent-red)" onclick="removeDersTopic(${topic.id})">Konuyu Sil</button>
                 </div>
                 <div class="form-row">
@@ -395,10 +443,23 @@
 
         function renderDersSubjectCard(subject) {
             const topics = dersTopics.filter(t => t.subjectId === subject.id);
+            const arrowStyle = subject.collapsed ? 'transform:rotate(-90deg);' : '';
+            const arrowHtml = `<span class="toggle-arrow" style="${arrowStyle}" onclick="toggleDersSubjectCollapse(${subject.id})">▶</span>`;
+
+            if (subject.collapsed) {
+                return `
+                <div class="prayer-card" style="border-color:var(--accent-gold);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📖 ${subject.name}</strong>
+                        <span style="font-size:0.8rem; color:var(--text-muted);">${topics.length} konu</span>
+                    </div>
+                </div>`;
+            }
+
             return `
             <div class="prayer-card" style="border-color:var(--accent-gold);">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong>📖 ${subject.name}</strong>
+                    <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📖 ${subject.name}</strong>
                     <button class="btn-action" style="color:var(--accent-red)" onclick="removeDersSubject(${subject.id})">Dersi Sil</button>
                 </div>
                 <div class="form-row">

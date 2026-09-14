@@ -14,7 +14,7 @@
             const input = document.getElementById('new-tasarim-subject');
             const name = input.value.trim();
             if (!name) { alert('Program adı boş olamaz.'); return; }
-            tasarimSubjects.push({ id: tasarimSubjectIdCounter++, name });
+            tasarimSubjects.push({ id: tasarimSubjectIdCounter++, name, collapsed: false });
             input.value = '';
             renderTasarim();
         }
@@ -32,7 +32,7 @@
             const input = document.getElementById('new-tasarim-topic-' + subjectId);
             const name = input.value.trim();
             if (!name) { alert('Konu adı boş olamaz.'); return; }
-            tasarimTopics.push({ id: tasarimTopicIdCounter++, subjectId, name });
+            tasarimTopics.push({ id: tasarimTopicIdCounter++, subjectId, name, collapsed: false });
             renderTasarim();
         }
 
@@ -57,9 +57,31 @@
                 saved: false,
                 showTechniques: false,
                 quizMode: false,
-                quizResult: null
+                quizResult: null,
+                collapsed: false
             });
             input.value = '';
+            renderTasarim();
+        }
+
+        function toggleTasarimSubjectCollapse(id) {
+            const s = tasarimSubjects.find(x => x.id === id);
+            if (!s) return;
+            s.collapsed = !s.collapsed;
+            renderTasarim();
+        }
+
+        function toggleTasarimTopicCollapse(id) {
+            const t = tasarimTopics.find(x => x.id === id);
+            if (!t) return;
+            t.collapsed = !t.collapsed;
+            renderTasarim();
+        }
+
+        function toggleTasarimUnitCollapse(id) {
+            const u = tasarimUnits.find(x => x.id === id);
+            if (!u) return;
+            u.collapsed = !u.collapsed;
             renderTasarim();
         }
 
@@ -366,20 +388,33 @@
         }
 
         function renderTasarimUnitSummary(unit) {
+            const questionCount = unit.questions.filter(q => q.text.trim()).length;
+            const doneToday = unit.doneDate === todayStr();
+            const arrowStyle = unit.collapsed ? 'transform:rotate(-90deg);' : '';
+            const arrowHtml = `<span class="toggle-arrow" style="${arrowStyle}" onclick="toggleTasarimUnitCollapse(${unit.id})">▶</span>`;
+
+            if (unit.collapsed) {
+                return `
+                <div class="prayer-card ${doneToday ? 'done-today' : ''}">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                        <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📝 ${unit.name}</strong>
+                        <span style="font-size:0.8rem; color:var(--text-muted);">${questionCount} soru</span>
+                    </div>
+                </div>`;
+            }
+
             const techniquesHtml = unit.showTechniques
                 ? `<div style="display:flex; flex-direction:column; gap:6px; margin-top:8px; border-top:1px solid var(--border-color); padding-top:8px;">
                     ${unit.techniques.map((t, i) => t.trim() ? `<div style="font-size:0.8rem;"><strong>Teknik ${i + 1}:</strong> ${t.replace(/</g, '&lt;')}</div>` : '').join('') || '<span style="color:var(--text-muted); font-size:0.8rem;">Henüz teknik notu girilmedi.</span>'}
                    </div>`
                 : '';
             const quizHtml = unit.quizMode ? renderTasarimQuiz(unit) : '';
-            const questionCount = unit.questions.filter(q => q.text.trim()).length;
-            const doneToday = unit.doneDate === todayStr();
             const ytHtml = unit.youtube ? `<a class="recipe-yt" href="${unit.youtube}" target="_blank" rel="noopener">▶ YouTube'da izle</a>` : '';
 
             return `
             <div class="prayer-card ${doneToday ? 'done-today' : ''}">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <strong>📝 ${unit.name}</strong>
+                    <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📝 ${unit.name}</strong>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
                         <button class="btn-action" onclick="toggleTasarimTechniques(${unit.id})">${unit.showTechniques ? '11 Tekniği Gizle' : '11 Tekniği Oku'}</button>
                         <button class="btn-action btn-primary" onclick="startTasarimQuiz(${unit.id})">Sınava Başla</button>
@@ -406,10 +441,23 @@
 
         function renderTasarimTopicCard(topic) {
             const units = tasarimUnits.filter(u => u.topicId === topic.id);
+            const arrowStyle = topic.collapsed ? 'transform:rotate(-90deg);' : '';
+            const arrowHtml = `<span class="toggle-arrow" style="${arrowStyle}" onclick="toggleTasarimTopicCollapse(${topic.id})">▶</span>`;
+
+            if (topic.collapsed) {
+                return `
+                <div class="prayer-card" style="border-color:var(--accent-blue);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📂 ${topic.name}</strong>
+                        <span style="font-size:0.8rem; color:var(--text-muted);">${units.length} ders birimi</span>
+                    </div>
+                </div>`;
+            }
+
             return `
             <div class="prayer-card" style="border-color:var(--accent-blue);">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong>📂 ${topic.name}</strong>
+                    <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📂 ${topic.name}</strong>
                     <button class="btn-action" style="color:var(--accent-red)" onclick="removeTasarimTopic(${topic.id})">Konuyu Sil</button>
                 </div>
                 <div class="form-row">
@@ -424,10 +472,23 @@
 
         function renderTasarimSubjectCard(subject) {
             const topics = tasarimTopics.filter(t => t.subjectId === subject.id);
+            const arrowStyle = subject.collapsed ? 'transform:rotate(-90deg);' : '';
+            const arrowHtml = `<span class="toggle-arrow" style="${arrowStyle}" onclick="toggleTasarimSubjectCollapse(${subject.id})">▶</span>`;
+
+            if (subject.collapsed) {
+                return `
+                <div class="prayer-card" style="border-color:var(--accent-gold);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 🎨 ${subject.name}</strong>
+                        <span style="font-size:0.8rem; color:var(--text-muted);">${topics.length} konu</span>
+                    </div>
+                </div>`;
+            }
+
             return `
             <div class="prayer-card" style="border-color:var(--accent-gold);">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong>🎨 ${subject.name}</strong>
+                    <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 🎨 ${subject.name}</strong>
                     <button class="btn-action" style="color:var(--accent-red)" onclick="removeTasarimSubject(${subject.id})">Programı Sil</button>
                 </div>
                 <div class="form-row">
