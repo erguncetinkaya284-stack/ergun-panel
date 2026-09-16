@@ -178,17 +178,15 @@
 
             const lines = raw.split('\n').map(l => l.trim()).filter(l => l !== '');
             const optionRegex = /^([A-Ea-e])[\)\.\-]\s*(.+)$/;
-            const answerRegex = /^(cevap|doğru cevap|dogru cevap)\s*[:\-]?/i;
-
             let questionLines = [];
             const options = ['', '', '', '', ''];
             let correct = null;
             let mode = 'question';
 
             lines.forEach(line => {
-                if (answerRegex.test(line)) {
-                    const letterMatch = line.match(/[A-Ea-e]/);
-                    if (letterMatch) correct = letterMatch[0].toUpperCase().charCodeAt(0) - 65;
+                const answerMatch = line.match(/^(?:cevap|doğru cevap|dogru cevap)\s*[:\-]?\s*([A-Ea-e])/i);
+                if (answerMatch) {
+                    correct = answerMatch[1].toUpperCase().charCodeAt(0) - 65;
                     return;
                 }
                 const optMatch = line.match(optionRegex);
@@ -417,7 +415,7 @@
             const unit = yksUnits.find(u => u.id === yksReader.unitId);
             if (!unit) return '';
             const isTechnique = yksReader.type === 'technique';
-            const items = isTechnique ? unit.techniques : getYksQuizQuestions(unit);
+            const items = isTechnique ? unit.techniqueContents : getYksQuizQuestions(unit);
             const item = items[yksReader.index];
             if (!item) return '';
             const text = isTechnique ? item : item.text;
