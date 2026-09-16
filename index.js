@@ -11,6 +11,7 @@ const MODULES = [
     { key: 'kpss', href: 'kpss.html', title: '📚 KPSS Takibi', search: '📚 kpss takibi', quote: '“Bugünün emeği, yarının makamı.”' },
     { key: 'ders', href: 'ders.html', title: '📖 Ders Takibi', search: '📖 ders takibi', quote: '“Her ders, bir basamak daha yukarı taşır.”' },
     { key: 'yks', href: 'yks.html', title: '🎓 YKS Takibi', search: '🎓 yks takibi', quote: '“Bir sayfa daha, hedefe bir adım daha.”' },
+    { key: 'otomasyon', href: 'otomasyon.html', title: '🧩 YKS Başlık Otomasyonu', search: '🧩 yks başlık otomasyonu', quote: '“Toplu başlık ekle, tek tek uğraşma.”' },
     { key: 'dil', href: 'dil.html', title: '🌍 Yabancı Dil Takibi', search: '🌍 yabancı dil takibi', quote: '“Yeni bir kelime, yeni bir kapı demektir.”' },
     { key: 'tarif', href: 'tarif.html', title: '👨‍🍳 Tarif Defteri', search: '👨‍🍳 tarif defteri', quote: '“Emekle pişen yemek, gönülden gönüle gider.”' },
     { key: 'enstruman', href: 'enstruman.html', title: '🎸 Enstrüman & Ders Takibi', search: '🎸 enstrüman & ders takibi', quote: '“Her nota, sabrın bir karşılığıdır.”' },

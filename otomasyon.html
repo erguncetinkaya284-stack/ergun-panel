@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YKS Panel — Başlık Ekleme Otomasyonu</title>
+<style>
+  :root {
+    --bg: #f7f5f2;
+    --bg-card: #ffffff;
+    --text: #1f2430;
+    --text-muted: #6b7280;
+    --border: #e2e0db;
+    --accent: #b8552f;
+    --accent-dark: #8f4023;
+    --accent-soft: #f1e3da;
+    --ok: #3f7d4f;
+    --ok-soft: #e6f2e8;
+    --err: #b23a3a;
+    --err-soft: #fbeaea;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16181d; --bg-card: #1f232b; --text: #e7e6e3; --text-muted: #9aa0ac;
+      --border: #33383f; --accent: #e08a5f; --accent-dark: #f0a578; --accent-soft: #3a2a22;
+      --ok: #6fbf7d; --ok-soft: #1d2c20; --err: #e36565; --err-soft: #2f1e1e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16181d; --bg-card: #1f232b; --text: #e7e6e3; --text-muted: #9aa0ac;
+    --border: #33383f; --accent: #e08a5f; --accent-dark: #f0a578; --accent-soft: #3a2a22;
+    --ok: #6fbf7d; --ok-soft: #1d2c20; --err: #e36565; --err-soft: #2f1e1e;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.5; padding:24px 16px 80px; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .sub { color: var(--text-muted); margin: 0 0 24px; font-size: 0.92rem; }
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 18px; }
+  .card h2 { font-size: 1rem; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  .step-num { background: var(--accent); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 600; flex: none; }
+  label { display: block; font-size: 0.85rem; color: var(--text-muted); margin: 10px 0 4px; }
+  label:first-child { margin-top: 0; }
+  select, input[type=text], input[type=number], textarea {
+    width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 10px; font-family: var(--sans); font-size: 0.92rem;
+  }
+  textarea { font-family: var(--mono); font-size: 0.82rem; min-height: 200px; resize: vertical; white-space: pre; }
+  input[type=file] { font-size: 0.85rem; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 180px; }
+  button { font-family: var(--sans); font-size: 0.88rem; font-weight: 600; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: var(--accent-dark); }
+  button.danger { background: var(--err); border-color: var(--err); color: #fff; }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.ghost { background: transparent; }
+  .btn-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
+  .status { margin-top: 10px; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; display: none; white-space: pre-line; }
+  .status.ok { display: block; background: var(--ok-soft); color: var(--ok); }
+  .status.err { display: block; background: var(--err-soft); color: var(--err); }
+  .status.info { display: block; background: var(--accent-soft); color: var(--accent-dark); }
+  details { margin-top: 12px; }
+  details summary { cursor: pointer; font-size: 0.85rem; color: var(--accent-dark); font-weight: 600; }
+  pre.template { background: var(--bg); border: 1px dashed var(--border); border-radius: 8px; padding: 12px; font-size: 0.76rem; overflow-x: auto; margin-top: 8px; font-family: var(--mono); white-space: pre-wrap; }
+  .preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 10px; margin-top: 12px; }
+  .metric { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; text-align: center; }
+  .metric .num { font-size: 1.3rem; font-weight: 700; }
+  .metric.good .num { color: var(--ok); }
+  .metric.bad .num { color: var(--err); }
+  .metric .lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+  ul.warn-list { margin: 10px 0 0; padding-left: 18px; font-size: 0.82rem; color: var(--err); }
+  table.added-list { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+  table.added-list th, table.added-list td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); }
+  table.added-list th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+  .pill { display: inline-block; background: var(--accent-soft); color: var(--accent-dark); border-radius: 999px; padding: 2px 9px; font-size: 0.72rem; font-weight: 600; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.err { background: var(--err-soft); color: var(--err); }
+  .del-btn { background: none; border: none; color: var(--err); font-size: 0.85rem; cursor: pointer; padding: 2px 6px; }
+  .empty-note { color: var(--text-muted); font-size: 0.85rem; font-style: italic; }
+  .footer-note { color: var(--text-muted); font-size: 0.78rem; margin-top: 30px; text-align: center; }
+  code { font-family: var(--mono); background: var(--accent-soft); color: var(--accent-dark); padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+  .progress-bar-outer { background: var(--bg); border: 1px solid var(--border); border-radius: 999px; height: 10px; overflow: hidden; margin-top: 10px; }
+  .progress-bar-inner { background: var(--accent); height: 100%; width: 0%; transition: width .3s; }
+  .ai-log { max-height: 220px; overflow-y: auto; margin-top: 10px; font-size: 0.8rem; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  .ai-log-row { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px solid var(--border); }
+  .ai-log-row:last-child { border-bottom: none; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tabs button { flex: 1; }
+  .tabs button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tabpanel { display: none; }
+  .tabpanel.active { display: block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p style="margin:0 0 10px;"><a href="index.html" style="color:var(--accent-dark); text-decoration:none; font-size:0.85rem;">← Ergün Panel'e dön</a></p>
+  <h1>🧩 YKS Panel — Başlık Ekleme Otomasyonu</h1>
+  <p class="sub">Panelden otomatik yükle (ya da yedek .json yükle) → ders/bölüm seç → başlıkları yapıştır ya da AI'a ürettir → doğrudan panele kaydet.</p>
+
+  <div class="card">
+    <h2><span class="step-num">1</span> Panel verisini yükle</h2>
+    <div class="btn-row" style="margin-bottom:10px;">
+      <button class="primary" id="autoLoadBtn">🔄 Panelden Otomatik Yükle</button>
+    </div>
+    <label for="fileInput" style="margin-top:6px;">Ya da elle bir yedek (.json) dosyası seç</label>
+    <input type="file" id="fileInput" accept=".json,application/json">
+    <div id="loadStatus" class="status"></div>
+  </div>
+
+  <div class="card" id="selectCard" style="display:none;">
+    <h2><span class="step-num">2</span> Ders / Bölüm</h2>
+    <div class="row">
+      <div>
+        <label for="subjectSelect">Ders</label>
+        <select id="subjectSelect"></select>
+      </div>
+      <div>
+        <label for="topicSelect">Bölüm / Konu</label>
+        <select id="topicSelect"></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="modeCard" style="display:none;">
+    <h2><span class="step-num">3</span> Başlıkları ekle</h2>
+    <div class="tabs">
+      <button id="tabManualBtn" class="active">✍️ Manuel yapıştır</button>
+      <button id="tabAiBtn">🤖 AI ile toplu üret</button>
+    </div>
+
+    <!-- MANUAL TAB -->
+    <div id="manualPanel" class="tabpanel active">
+      <label for="unitName">Başlık adı</label>
+      <input type="text" id="unitName" placeholder='Ör: "2. Kas Sistemi ve Kasılma Mekanizması"'>
+      <details>
+        <summary>Şablon formatını göster / kopyala</summary>
+        <pre class="template" id="templateBox"></pre>
+        <button class="ghost" id="copyTemplateBtn" style="margin-top:6px;">Şablonu kopyala</button>
+      </details>
+      <label for="contentArea">11 teknik + sorular (şablona göre)</label>
+      <textarea id="contentArea" placeholder="[T1]&#10;...&#10;&#10;[SORULAR]&#10;1) ..."></textarea>
+      <div class="btn-row">
+        <button class="primary" id="parseBtn">Ayrıştır ve Önizle</button>
+      </div>
+      <div id="parseStatus" class="status"></div>
+      <div class="preview-grid" id="previewGrid" style="display:none;"></div>
+      <ul class="warn-list" id="warnList"></ul>
+      <div class="btn-row" id="addRow" style="display:none;">
+        <button class="primary" id="addBtn">✅ Bu başlığı listeye ekle</button>
+      </div>
+    </div>
+
+    <!-- AI TAB -->
+    <div id="aiPanel" class="tabpanel">
+      <div id="aiUnavailable" class="status err" style="display:none;">
+        Bu görünümde AI özelliği kullanılamıyor (sayfa claude.ai içinde açık olmalı, indirilmiş dosyada çalışmaz).
+      </div>
+      <div id="aiAvailableWrap">
+        <label for="aiTitlesArea">Başlık isimleri (her satıra bir tane, seçtiğin ders/bölüme eklenecek)</label>
+        <textarea id="aiTitlesArea" style="min-height:140px;" placeholder="1. Sinir Sisteminin Yapısı...&#10;2. Kas Sistemi ve Kasılma Mekanizması&#10;3. ..."></textarea>
+        <div class="row" style="margin-top:6px;">
+          <div>
+            <label for="aiQCount">Başlık başına soru sayısı</label>
+            <input type="number" id="aiQCount" value="20" min="5" max="40">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="primary" id="aiStartBtn">▶️ Başlat</button>
+          <button class="danger" id="aiStopBtn" style="display:none;">⏹ Durdur</button>
+        </div>
+        <div id="aiStatus" class="status"></div>
+        <div class="progress-bar-outer" id="aiProgressWrap" style="display:none;">
+          <div class="progress-bar-inner" id="aiProgressBar"></div>
+        </div>
+        <div class="ai-log" id="aiLog" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="sessionCard" style="display:none;">
+    <h2><span class="step-num">4</span> Bu oturumda eklenenler</h2>
+    <div id="sessionListWrap"><p class="empty-note">Henüz başlık eklenmedi.</p></div>
+  </div>
+
+  <div class="card" id="downloadCard" style="display:none;">
+    <h2><span class="step-num">5</span> Panele kaydet</h2>
+    <p class="sub" style="margin-bottom:10px;">Bu oturumda eklediğin başlıklar, panelin kendi deposuna doğrudan yazılır — ayrıca JSON indirip elle yüklemene gerek kalmaz. Diğer modüllerin verisine dokunulmaz, sadece YKS verisi güncellenir.</p>
+    <div class="btn-row">
+      <button class="primary" id="saveToPanelBtn" disabled>✅ Panele Kaydet</button>
+      <button class="danger" id="undoBtn" style="display:none;">↺ Geri Al (Son Kaydı Geri Çek)</button>
+    </div>
+    <div id="saveStatus" class="status"></div>
+    <details style="margin-top:14px;">
+      <summary>Ya da sadece .json olarak indir (yedek amaçlı, panele otomatik yazılmaz)</summary>
+      <div class="btn-row" style="margin-top:10px;">
+        <button id="downloadBtn" disabled>⬇️ Güncel JSON'u indir</button>
+      </div>
+      <div id="downloadStatus" class="status"></div>
+    </details>
+  </div>
+
+  <p class="footer-note">Veriler panelin kendi deposunda (aynı yerde ibadet/fitness/vb. de tutuluyor) saklanır. AI özelliği kullanıldığında her istek senin kendi claude.ai kullanım hakkından düşer.</p>
+</div>
+
+<script src="shared.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  const TECHNIQUE_LABELS = [
+    "konu açıklaması",
+    "parçalama",
+    "görselleştirme",
+    "öngörme",
+    "zihin haritaları",
+    " Örnek Kod, Komut Dizilimi veya Kritik Formül/Kısayol",
+    "deftere not",
+    "Hata Öngörüsü / Problem Çözme:",
+    "Pratikle Öğrenme / Uygulama:",
+    "Hata Ayıklama / Tasarım Revizyonu / Çeldirici Analizi",
+    "Tekrar / Kalıcılık :"
+  ];
+  const TECHNIQUE_PLAIN = [
+    "konu açıklaması", "parçalama", "görselleştirme", "öngörme", "zihin haritaları",
+    "örnek kod / kritik formül / kısayol", "deftere not", "hata öngörüsü / problem çözme",
+    "pratikle öğrenme / uygulama", "hata ayıklama / çeldirici analizi", "tekrar / kalıcılık"
+  ];
+
+  let panelData = null;
+  let sessionAdds = [];
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- Template ----------
+  const templateText =
+    "[T1]\n(konu açıklaması metni)\n\n[T2]\n(parçalama metni)\n\n[T3]\n(görselleştirme metni)\n\n" +
+    "[T4]\n(öngörme metni)\n\n[T5]\n(zihin haritaları metni)\n\n[T6]\n(örnek kod / formül / kısayol)\n\n" +
+    "[T7]\n(deftere not)\n\n[T8]\n(hata öngörüsü / problem çözme)\n\n[T9]\n(pratikle öğrenme / uygulama)\n\n" +
+    "[T10]\n(hata ayıklama / çeldirici analizi)\n\n[T11]\n(tekrar / kalıcılık)\n\n" +
+    "[SORULAR]\n1) Soru metni?\nA) seçenek\nB) seçenek\nC) seçenek\nD) seçenek\nE) seçenek\nDoğru: C\n\n" +
+    "2) İkinci soru?\nA) ...\nB) ...\nC) ...\nD) ...\nE) ...\nDoğru: A\n\n(...40'a kadar devam eder)";
+  $("templateBox").textContent = templateText;
+  $("copyTemplateBtn").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(templateText); flashBtn("copyTemplateBtn", "Kopyalandı ✓"); }
+    catch (e) { alert("Kopyalanamadı, şablonu elle seçip kopyalayabilirsin."); }
+  });
+  function flashBtn(id, msg) {
+    const b = $(id); const old = b.textContent;
+    b.textContent = msg; setTimeout(() => (b.textContent = old), 1400);
+  }
+  function showStatus(id, kind, msg) {
+    const el = $(id); el.className = "status " + kind; el.textContent = msg;
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  // ---------- Tabs ----------
+  $("tabManualBtn").addEventListener("click", () => switchTab("manual"));
+  $("tabAiBtn").addEventListener("click", () => switchTab("ai"));
+  function switchTab(which) {
+    $("tabManualBtn").classList.toggle("active", which === "manual");
+    $("tabAiBtn").classList.toggle("active", which === "ai");
+    $("manualPanel").classList.toggle("active", which === "manual");
+    $("aiPanel").classList.toggle("active", which === "ai");
+  }
+
+  // ---------- Step 1: auto-load from panel storage ----------
+  $("autoLoadBtn").addEventListener("click", async () => {
+    showStatus("loadStatus", "info", "Panelden okunuyor...");
+    try {
+      const raw = await persistGet('app-full-data');
+      if (!raw) throw new Error("Panelde henüz kayıtlı veri bulunamadı. Önce panelde bir modülü açıp bir şey kaydetmiş olman gerekir.");
+      const data = JSON.parse(raw);
+      if (!Array.isArray(data.yksSubjects) || !Array.isArray(data.yksTopics) || !Array.isArray(data.yksUnits)) {
+        // YKS henüz hiç kullanılmamışsa bu alanlar olmayabilir — boş diziler olarak başlat
+        data.yksSubjects = data.yksSubjects || [];
+        data.yksTopics = data.yksTopics || [];
+        data.yksUnits = data.yksUnits || [];
+        data.yksSubjectIdCounter = data.yksSubjectIdCounter || 1;
+        data.yksTopicIdCounter = data.yksTopicIdCounter || 1;
+        data.yksUnitIdCounter = data.yksUnitIdCounter || 1;
+        data.yksQuestionIdCounter = data.yksQuestionIdCounter || 1;
+      }
+      panelData = data;
+      showStatus("loadStatus", "ok", `Panelden yüklendi ✓ — ${data.yksSubjects.length} ders, ${data.yksTopics.length} bölüm/konu, ${data.yksUnits.length} başlık mevcut.`);
+      populateSubjects();
+      ["selectCard", "modeCard", "sessionCard", "downloadCard"].forEach((id) => ($(id).style.display = "block"));
+      $("downloadBtn").disabled = false;
+      $("saveToPanelBtn").disabled = false;
+      refreshUndoButton();
+      initSampleCapability();
+    } catch (err) {
+      showStatus("loadStatus", "err", "Yüklenemedi: " + err.message);
+    }
+  });
+
+  // ---------- Step 1: load ----------
+  $("fileInput").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!Array.isArray(data.yksSubjects) || !Array.isArray(data.yksTopics) || !Array.isArray(data.yksUnits)) {
+          throw new Error("Bu dosyada yksSubjects / yksTopics / yksUnits alanları bulunamadı.");
+        }
+        panelData = data;
+        showStatus("loadStatus", "ok", `Yüklendi ✓ — ${data.yksSubjects.length} ders, ${data.yksTopics.length} bölüm/konu, ${data.yksUnits.length} başlık mevcut.`);
+        populateSubjects();
+        ["selectCard", "modeCard", "sessionCard", "downloadCard"].forEach((id) => ($(id).style.display = "block"));
+        $("downloadBtn").disabled = false;
+        $("saveToPanelBtn").disabled = false;
+        refreshUndoButton();
+        initSampleCapability();
+      } catch (err) {
+        panelData = null;
+        showStatus("loadStatus", "err", "Dosya okunamadı: " + err.message);
+      }
+    };
+    reader.readAsText(file, "utf-8");
+  });
+
+  // ---------- Step 2: dropdowns ----------
+  function populateSubjects() {
+    const sel = $("subjectSelect");
+    sel.innerHTML = "";
+    panelData.yksSubjects.slice().sort((a, b) => a.id - b.id).forEach((s) => {
+      const opt = document.createElement("option");
+      opt.value = s.id; opt.textContent = `${s.id}. ${s.name}`;
+      sel.appendChild(opt);
+    });
+    populateTopics();
+  }
+  $("subjectSelect").addEventListener("change", populateTopics);
+
+  function populateTopics() {
+    const subjectId = parseInt($("subjectSelect").value, 10);
+    const sel = $("topicSelect");
+    sel.innerHTML = "";
+    panelData.yksTopics.filter((t) => t.subjectId === subjectId).sort((a, b) => a.id - b.id).forEach((t) => {
+      const opt = document.createElement("option");
+      opt.value = t.id; opt.textContent = t.name;
+      sel.appendChild(opt);
+    });
+    const newOpt = document.createElement("option");
+    newOpt.value = "__new__"; newOpt.textContent = "+ Yeni bölüm/konu ekle";
+    sel.appendChild(newOpt);
+  }
+  $("topicSelect").addEventListener("change", () => {
+    if ($("topicSelect").value === "__new__") {
+      const name = prompt("Yeni bölüm/konu adı:");
+      if (name && name.trim()) {
+        const subjectId = parseInt($("subjectSelect").value, 10);
+        const tempId = "__pending_" + Date.now();
+        const opt = document.createElement("option");
+        opt.value = tempId; opt.textContent = name.trim() + " (yeni)";
+        opt.dataset.newName = name.trim(); opt.dataset.newSubjectId = subjectId;
+        $("topicSelect").insertBefore(opt, $("topicSelect").lastChild);
+        $("topicSelect").value = tempId;
+      } else {
+        $("topicSelect").value = $("topicSelect").options[0].value;
+      }
+    }
+  });
+
+  function resolveTopicSelection() {
+    // returns {topicId, topicName} and creates a pending topic in panelData if needed
+    const subjectId = parseInt($("subjectSelect").value, 10);
+    const topicSelVal = $("topicSelect").value;
+    const topicOpt = $("topicSelect").selectedOptions[0];
+    if (topicSelVal.startsWith("__pending_")) {
+      const nextTopicId = Math.max(0, ...panelData.yksTopics.map((t) => t.id)) + 1;
+      const newTopic = { id: nextTopicId, subjectId: subjectId, name: topicOpt.dataset.newName };
+      panelData.yksTopics.push(newTopic);
+      populateTopics();
+      $("topicSelect").value = String(nextTopicId);
+      return { topicId: nextTopicId, topicName: newTopic.name };
+    }
+    const topicId = parseInt(topicSelVal, 10);
+    const t = panelData.yksTopics.find((tt) => tt.id === topicId);
+    return { topicId, topicName: t ? t.name : "?" };
+  }
+
+  // ---------- Core: commit a unit into panelData + session list ----------
+  function commitUnit(unitName, techniqueContents, questions) {
+    const subjectId = parseInt($("subjectSelect").value, 10);
+    const subject = panelData.yksSubjects.find((s) => s.id === subjectId);
+    const { topicId, topicName } = resolveTopicSelection();
+
+    const nextUnitId = Math.max(0, ...panelData.yksUnits.map((u) => u.id)) + 1;
+    let nextQId = 0;
+    panelData.yksUnits.forEach((u) => (u.questions || []).forEach((q) => (nextQId = Math.max(nextQId, q.id))));
+    nextQId += 1;
+
+    const qs = questions.map((q) => {
+      const withId = { id: nextQId, text: q.text, options: q.options, correct: q.correct };
+      nextQId += 1;
+      return withId;
+    });
+
+    const unit = {
+      id: nextUnitId, topicId: topicId, name: unitName,
+      techniques: TECHNIQUE_LABELS.slice(),
+      techniqueContents: techniqueContents.map((v) => v || ""),
+      questions: qs, saved: true, showTechniques: false, quizMode: false, quizResult: null,
+    };
+    panelData.yksUnits.push(unit);
+    sessionAdds.push({ subjectName: subject ? subject.name : "?", topicName, unitName, qCount: qs.length });
+    renderSessionList();
+    return unit;
+  }
+
+  function renderSessionList() {
+    if (sessionAdds.length === 0) {
+      $("sessionListWrap").innerHTML = '<p class="empty-note">Henüz başlık eklenmedi.</p>';
+      return;
+    }
+    let html = '<table class="added-list"><thead><tr><th>Ders</th><th>Bölüm</th><th>Başlık</th><th>Soru</th><th></th></tr></thead><tbody>';
+    sessionAdds.forEach((a, i) => {
+      html += `<tr><td>${escapeHtml(a.subjectName)}</td><td>${escapeHtml(a.topicName)}</td><td>${escapeHtml(a.unitName)}</td><td><span class="pill">${a.qCount}</span></td><td><button class="del-btn" data-idx="${i}">Geri al</button></td></tr>`;
+    });
+    html += "</tbody></table>";
+    $("sessionListWrap").innerHTML = html;
+    $("sessionListWrap").querySelectorAll(".del-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        const removed = sessionAdds.splice(idx, 1)[0];
+        const uIdx = panelData.yksUnits.findIndex((u) => u.name === removed.unitName && u.questions.length === removed.qCount);
+        if (uIdx !== -1) panelData.yksUnits.splice(uIdx, 1);
+        renderSessionList();
+      });
+    });
+  }
+
+  // ---------- Manual tab: parsing ----------
+  let lastParsed = null;
+  $("parseBtn").addEventListener("click", () => {
+    const raw = $("contentArea").value;
+    const result = parseContent(raw);
+    lastParsed = result.ok ? result : null;
+    renderPreview(result);
+  });
+  $("unitName").addEventListener("input", () => { if (lastParsed) renderPreview(lastParsed); });
+
+  function parseContent(raw) {
+    const warnings = [];
+    const techniqueContents = [];
+    const markerRe = /^\[(T\d{1,2}|SORULAR)\]\s*$/gim;
+    const markers = [];
+    let m;
+    while ((m = markerRe.exec(raw)) !== null) markers.push({ tag: m[1].toUpperCase(), index: m.index, end: m.index + m[0].length });
+    if (markers.length === 0) return { ok: false, error: "Hiç [T1]...[T11] / [SORULAR] etiketi bulunamadı. Şablonu kontrol et." };
+
+    const blocks = {};
+    for (let i = 0; i < markers.length; i++) {
+      const start = markers[i].end;
+      const end = i + 1 < markers.length ? markers[i + 1].index : raw.length;
+      blocks[markers[i].tag] = raw.slice(start, end).trim();
+    }
+    for (let i = 1; i <= 11; i++) {
+      const key = "T" + i;
+      techniqueContents.push(blocks[key] && blocks[key].length > 0 ? blocks[key] : null);
+    }
+    const missingT = techniqueContents.map((v, i) => (v === null ? i + 1 : null)).filter((v) => v !== null);
+
+    const questions = [];
+    const soruBlock = blocks["SORULAR"] || "";
+    if (!soruBlock) {
+      warnings.push("[SORULAR] bloğu bulunamadı.");
+    } else {
+      const qParts = soruBlock.split(/\n(?=\s*\d+[\)\.]\s)/);
+      qParts.forEach((chunk, idx) => {
+        chunk = chunk.trim();
+        if (!chunk) return;
+        const lines = chunk.split("\n").map((l) => l.trim()).filter((l) => l.length > 0);
+        if (lines.length < 3) { warnings.push(`Soru ${idx + 1}: satır sayısı yetersiz, atlandı.`); return; }
+        const qText = lines[0].replace(/^\d+[\)\.]\s*/, "");
+        const options = []; let correctLetter = null;
+        for (let i = 1; i < lines.length; i++) {
+          const optMatch = lines[i].match(/^([A-Za-zÇĞİÖŞÜçğıöşü])[\)\.]\s*(.+)$/);
+          const correctMatch = lines[i].match(/^(Doğru|Cevap|CEVAP|Dogru)\s*[:\-]\s*([A-Za-z])/i);
+          if (correctMatch) correctLetter = correctMatch[2].toUpperCase();
+          else if (optMatch) options.push({ letter: optMatch[1].toUpperCase(), text: optMatch[2] });
+        }
+        if (options.length < 2) { warnings.push(`Soru ${idx + 1}: en az 2 seçenek bulunamadı, atlandı.`); return; }
+        if (!correctLetter) { warnings.push(`Soru ${idx + 1}: "Doğru: X" satırı bulunamadı, atlandı.`); return; }
+        const correctIdx = options.findIndex((o) => o.letter === correctLetter);
+        if (correctIdx === -1) { warnings.push(`Soru ${idx + 1}: doğru şık (${correctLetter}) seçenekler arasında yok, atlandı.`); return; }
+        questions.push({ text: qText, options: options.map((o) => o.text), correct: correctIdx });
+      });
+    }
+    if (questions.length > 40) warnings.push(`40'tan fazla soru bulundu (${questions.length}); sadece ilk 40 tanesi alınacak.`);
+    return { ok: true, techniqueContents, missingT, questions: questions.slice(0, 40), warnings };
+  }
+
+  function renderPreview(result) {
+    $("previewGrid").style.display = "grid";
+    $("warnList").innerHTML = "";
+    if (!result.ok) {
+      showStatus("parseStatus", "err", result.error);
+      $("previewGrid").style.display = "none"; $("addRow").style.display = "none";
+      return;
+    }
+    const tCount = 11 - result.missingT.length;
+    const qCount = result.questions.length;
+    $("previewGrid").innerHTML = `
+      <div class="metric ${tCount === 11 ? "good" : "bad"}"><div class="num">${tCount}/11</div><div class="lbl">Teknik dolu</div></div>
+      <div class="metric ${qCount > 0 ? "good" : "bad"}"><div class="num">${qCount}</div><div class="lbl">Soru ayrıştırıldı</div></div>`;
+    const warnings = result.warnings.slice();
+    if (result.missingT.length > 0) warnings.unshift("Eksik teknik(ler): " + result.missingT.map((n) => "T" + n).join(", "));
+    $("warnList").innerHTML = warnings.map((w) => `<li>${escapeHtml(w)}</li>`).join("");
+    const canAdd = tCount === 11 && qCount > 0 && $("unitName").value.trim().length > 0;
+    $("addRow").style.display = "flex"; $("addBtn").disabled = !canAdd;
+    showStatus("parseStatus", tCount === 11 && qCount > 0 ? "ok" : "info",
+      tCount === 11 && qCount > 0 ? "Ayrıştırma tamam. Aşağıdan başlığı listeye ekleyebilirsin." : "Ayrıştırıldı ama eksikler var, eklemeden önce düzelt.");
+  }
+
+  $("addBtn").addEventListener("click", () => {
+    if (!lastParsed || !panelData) return;
+    const unitName = $("unitName").value.trim();
+    if (!unitName) { alert("Başlık adını gir."); return; }
+    commitUnit(unitName, lastParsed.techniqueContents, lastParsed.questions);
+    $("unitName").value = ""; $("contentArea").value = "";
+    $("previewGrid").style.display = "none"; $("addRow").style.display = "none"; $("warnList").innerHTML = "";
+    showStatus("parseStatus", "ok", `"${unitName}" eklendi ✓ — sıradaki başlığa geçebilirsin.`);
+    lastParsed = null;
+  });
+
+  // ---------- AI tab ----------
+  let sampleJson = null;
+  let aiRunning = false;
+  let aiStopRequested = false;
+  let aiQueue = [];
+  let aiIndex = 0;
+  let aiLogEntries = [];
+
+  async function initSampleCapability() {
+    try {
+      if (!window.claude || typeof window.claude.use !== "function") throw new Error("no claude runtime");
+      const sample = await window.claude.use("sample");
+      if (!sample) throw new Error("null capability");
+      sampleJson = sample.json.bind(sample);
+      $("aiUnavailable").style.display = "none";
+      $("aiAvailableWrap").style.display = "block";
+    } catch (e) {
+      sampleJson = null;
+      $("aiUnavailable").style.display = "block";
+      $("aiAvailableWrap").style.display = "none";
+    }
+  }
+
+  function buildTechPrompt(subjectName, topicName, unitName) {
+    return `Sen KPSS/TYT/AYT sınavlarına hazırlanan bir öğrenci için ders notu hazırlayan bir eğitim asistanısın.
+Ders: ${subjectName}
+Bölüm: ${topicName}
+Başlık: ${unitName}
+
+Bu başlık için aşağıdaki 11 farklı öğrenme tekniğine göre, her biri en az 3-4 cümlelik, Türkçe, doğru ve sınav odaklı açıklama yaz:
+1. ${TECHNIQUE_PLAIN[0]}
+2. ${TECHNIQUE_PLAIN[1]}
+3. ${TECHNIQUE_PLAIN[2]}
+4. ${TECHNIQUE_PLAIN[3]}
+5. ${TECHNIQUE_PLAIN[4]}
+6. ${TECHNIQUE_PLAIN[5]}
+7. ${TECHNIQUE_PLAIN[6]}
+8. ${TECHNIQUE_PLAIN[7]}
+9. ${TECHNIQUE_PLAIN[8]}
+10. ${TECHNIQUE_PLAIN[9]}
+11. ${TECHNIQUE_PLAIN[10]}
+
+SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:
+{"techniqueContents": ["...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "..."]}
+(dizi tam olarak 11 eleman içermeli, sırasıyla yukarıdaki 11 tekniğe karşılık gelmeli)`;
+  }
+
+  function buildQuestionsPrompt(subjectName, topicName, unitName, count) {
+    return `Ders: ${subjectName}
+Bölüm: ${topicName}
+Başlık: ${unitName}
+
+Bu başlık için sınav tarzında, Türkçe, ${count} adet çoktan seçmeli soru hazırla. Her soru 5 seçenekli (A-E), gerçekçi çeldiricilerle, ÖSYM tarzında.
+
+SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:
+{"questions": [{"text": "...", "options": ["...", "...", "...", "...", "..."], "correct": 0}, ...]}
+("correct" alanı doğru şıkkın index'i: 0=A, 1=B, 2=C, 3=D, 4=E. Dizi tam olarak ${count} soru içermeli.)`;
+  }
+
+  function renderAiLog() {
+    $("aiLog").style.display = aiLogEntries.length ? "block" : "none";
+    $("aiLog").innerHTML = aiLogEntries.slice().reverse().map((e) =>
+      `<div class="ai-log-row"><span>${escapeHtml(e.name)}</span><span class="pill ${e.ok ? "ok" : "err"}">${escapeHtml(e.msg)}</span></div>`
+    ).join("");
+  }
+
+  function updateAiProgress() {
+    $("aiProgressWrap").style.display = "block";
+    const pct = aiQueue.length ? Math.round((aiIndex / aiQueue.length) * 100) : 0;
+    $("aiProgressBar").style.width = pct + "%";
+  }
+
+  $("aiStartBtn").addEventListener("click", async () => {
+    if (!panelData || !sampleJson) return;
+    const names = $("aiTitlesArea").value.split("\n").map((l) => l.trim()).filter((l) => l.length > 0);
+    if (names.length === 0) { alert("En az bir başlık ismi gir."); return; }
+    aiQueue = names; aiIndex = 0; aiStopRequested = false; aiLogEntries = [];
+    renderAiLog();
+    startAiRun();
+  });
+
+  $("aiStopBtn").addEventListener("click", () => { aiStopRequested = true; });
+
+  function setAiRunningUI(running) {
+    aiRunning = running;
+    $("aiStartBtn").style.display = running ? "none" : "inline-block";
+    $("aiStopBtn").style.display = running ? "inline-block" : "none";
+    $("aiTitlesArea").disabled = running;
+    $("aiQCount").disabled = running;
+  }
+
+  async function startAiRun() {
+    setAiRunningUI(true);
+    showStatus("aiStatus", "info", `Başladı — ${aiQueue.length} başlık kuyrukta.`);
+    const subjectId = parseInt($("subjectSelect").value, 10);
+    const subject = panelData.yksSubjects.find((s) => s.id === subjectId);
+    const topicOpt = $("topicSelect").selectedOptions[0];
+    const topicName = topicOpt && topicOpt.value !== "__new__" && !String(topicOpt.value).startsWith("__pending_")
+      ? topicOpt.textContent
+      : (topicOpt ? topicOpt.textContent.replace(" (yeni)", "") : "");
+    const qCount = Math.max(5, Math.min(40, parseInt($("aiQCount").value, 10) || 20));
+
+    while (aiIndex < aiQueue.length) {
+      if (aiStopRequested) { showStatus("aiStatus", "info", `Durduruldu — ${aiIndex}/${aiQueue.length} tamamlandı. "Başlat" ile kaldığı yerden devam eder.`); break; }
+      const name = aiQueue[aiIndex];
+      updateAiProgress();
+      showStatus("aiStatus", "info", `(${aiIndex + 1}/${aiQueue.length}) üretiliyor: ${name}`);
+      try {
+        const techResult = await sampleJson(buildTechPrompt(subject.name, topicName, name), { modelTier: "default" });
+        const tc = techResult && Array.isArray(techResult.techniqueContents) ? techResult.techniqueContents : null;
+        if (!tc || tc.length < 11) throw { code: "invalid_json", message: "11 teknik dönmedi" };
+
+        const qResult = await sampleJson(buildQuestionsPrompt(subject.name, topicName, name, qCount), { modelTier: "default" });
+        const qs = qResult && Array.isArray(qResult.questions) ? qResult.questions.filter((q) => q && q.text && Array.isArray(q.options) && typeof q.correct === "number") : [];
+        if (qs.length === 0) throw { code: "invalid_json", message: "soru dönmedi" };
+
+        commitUnit(name, tc.slice(0, 11), qs);
+        aiLogEntries.push({ name, ok: true, msg: `${qs.length} soru ✓` });
+        aiIndex++;
+      } catch (err) {
+        const code = err && err.code ? err.code : "unknown";
+        aiLogEntries.push({ name, ok: false, msg: code });
+        renderAiLog();
+
+        if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(code)) {
+          showStatus("aiStatus", "err", `AI özelliği bu görünümde kullanılamıyor (${code}). Manuel sekmeye geçebilirsin.`);
+          break;
+        }
+        if (code === "rate_limited" || code === "session_expired") {
+          showStatus("aiStatus", "err", `Sınıra takıldı (${code}). Biraz bekleyip "Başlat" ile "${name}" başlığından devam edebilirsin.`);
+          break;
+        }
+        // other errors: skip this one, continue
+        aiIndex++;
+        showStatus("aiStatus", "info", `"${name}" atlandı (${code}), devam ediliyor...`);
+      }
+      renderAiLog();
+      await new Promise((r) => setTimeout(r, 250));
+    }
+
+    updateAiProgress();
+    setAiRunningUI(false);
+    if (aiIndex >= aiQueue.length) {
+      showStatus("aiStatus", "ok", `Tamamlandı ✓ — ${aiQueue.length} başlık işlendi. Aşağıdan güncel JSON'u indirebilirsin.`);
+    }
+  }
+
+  // ---------- Step 5: panele kaydet + geri al ----------
+  const UNDO_KEY = 'otomasyon-yks-undo-backup';
+
+  async function refreshUndoButton() {
+    const backupRaw = await persistGet(UNDO_KEY);
+    $("undoBtn").style.display = backupRaw ? "inline-block" : "none";
+  }
+  refreshUndoButton();
+
+  $("saveToPanelBtn").addEventListener("click", async () => {
+    if (!panelData) return;
+    if (sessionAdds.length === 0) {
+      if (!confirm("Bu oturumda hiç yeni başlık eklemedin. Yine de mevcut haliyle panele kaydetmek ister misin?")) return;
+    }
+    $("saveToPanelBtn").disabled = true;
+    showStatus("saveStatus", "info", "Kaydediliyor...");
+    try {
+      // Panelin GÜNCEL halini tekrar oku (bu arada başka bir sayfada değişiklik olmuş olabilir),
+      // sadece YKS'ye ait alanları üzerine yaz — diğer modüllerin verisine dokunma.
+      const liveRaw = await persistGet('app-full-data');
+      const live = liveRaw ? JSON.parse(liveRaw) : {};
+
+      // Geri alma için, ÜZERİNE YAZMADAN ÖNCEKİ YKS verisini yedekle
+      const undoBackup = {
+        yksSubjects: live.yksSubjects || [],
+        yksTopics: live.yksTopics || [],
+        yksUnits: live.yksUnits || [],
+        yksSubjectIdCounter: live.yksSubjectIdCounter || 1,
+        yksTopicIdCounter: live.yksTopicIdCounter || 1,
+        yksUnitIdCounter: live.yksUnitIdCounter || 1,
+        yksQuestionIdCounter: live.yksQuestionIdCounter || 1,
+        yksQuizAnswers: live.yksQuizAnswers || {},
+      };
+      await persistSet(UNDO_KEY, JSON.stringify(undoBackup));
+
+      // YKS alanlarını güncel panel verisinin üzerine yaz
+      live.yksSubjects = panelData.yksSubjects;
+      live.yksTopics = panelData.yksTopics;
+      live.yksUnits = panelData.yksUnits;
+      live.yksSubjectIdCounter = panelData.yksSubjectIdCounter || undoBackup.yksSubjectIdCounter;
+      live.yksTopicIdCounter = panelData.yksTopicIdCounter || undoBackup.yksTopicIdCounter;
+      live.yksUnitIdCounter = panelData.yksUnitIdCounter || undoBackup.yksUnitIdCounter;
+      live.yksQuestionIdCounter = panelData.yksQuestionIdCounter || undoBackup.yksQuestionIdCounter;
+
+      await persistSet('app-full-data', JSON.stringify(live));
+      showStatus("saveStatus", "ok", `Panele kaydedildi ✓ — ${sessionAdds.length} yeni başlık yazıldı. YKS modülünü açtığında (sayfayı yenileyerek) göreceksin.`);
+      await refreshUndoButton();
+    } catch (err) {
+      showStatus("saveStatus", "err", "Kaydedilemedi: " + err.message);
+    } finally {
+      $("saveToPanelBtn").disabled = false;
+    }
+  });
+
+  $("undoBtn").addEventListener("click", async () => {
+    if (!confirm("Son 'Panele Kaydet' işlemini geri almak istediğine emin misin? YKS verisi bir önceki haline döner.")) return;
+    try {
+      const backupRaw = await persistGet(UNDO_KEY);
+      if (!backupRaw) { showStatus("saveStatus", "err", "Geri alınacak bir kayıt bulunamadı."); return; }
+      const backup = JSON.parse(backupRaw);
+      const liveRaw = await persistGet('app-full-data');
+      const live = liveRaw ? JSON.parse(liveRaw) : {};
+      Object.assign(live, backup);
+      await persistSet('app-full-data', JSON.stringify(live));
+      await persistSet(UNDO_KEY, ''); // geri alma tek seviyeli — kullanılınca temizlenir
+      $("undoBtn").style.display = "none";
+      showStatus("saveStatus", "ok", "Geri alındı ✓ — YKS verisi son kayıttan önceki haline döndü.");
+    } catch (err) {
+      showStatus("saveStatus", "err", "Geri alınamadı: " + err.message);
+    }
+  });
+
+  // ---------- Step 5: download ----------
+  $("downloadBtn").addEventListener("click", async () => {
+    if (!panelData) return;
+    const filename = "ergun-yedek-" + new Date().toISOString().slice(0, 10) + ".json";
+    const jsonStr = JSON.stringify(panelData, null, 2);
+    try {
+      const downloads = window.claude ? await window.claude.use("downloads") : null;
+      if (!downloads) throw new Error("no-cap");
+      const res = await downloads.save({ filename, data: new Blob([jsonStr], { type: "application/json" }) });
+      showStatus("downloadStatus", "ok", (res.status === "saved" ? "İndirildi ✓ " : "Gönderildi ✓ ") + filename);
+    } catch (e) {
+      try {
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showStatus("downloadStatus", "ok", "İndirildi ✓ " + filename);
+      } catch (e2) {
+        showStatus("downloadStatus", "err", "İndirme başarısız oldu.");
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>
