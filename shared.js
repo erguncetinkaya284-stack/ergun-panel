@@ -89,7 +89,7 @@
             'books','bookIdCounter','bookPageIdCounter',
             'siirler','siirIdCounter',
             'suruItems','suruIdCounter','suruTypes',
-            'yatirimCategories','yatirimItems','yatirimItemIdCounter','yatirimNotes','yatirimStudySubjects','yatirimStudySubjectIdCounter','yatirimStudyTopicIdCounter','yatirimStudyUnitIdCounter','yatirimStudyQuestionIdCounter',
+            'yatirimCategories','yatirimItems','yatirimItemIdCounter','yatirimNotes','yatirimStudySubjects','yatirimStudySubjectIdCounter','yatirimStudyTopics','yatirimStudyTopicIdCounter','yatirimStudyUnits','yatirimStudyUnitIdCounter','yatirimStudyQuestionIdCounter','yatirimStudyQuizAnswers',
             'dersSubjects','dersSubjectIdCounter','dersTopics','dersTopicIdCounter','dersUnits','dersUnitIdCounter','dersQuestionIdCounter','dersQuizAnswers',
             'evDoluCount','dukkanDoluCount',
             'moduleVisibility','moduleOrder'

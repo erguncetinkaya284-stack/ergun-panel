@@ -60,12 +60,13 @@
             <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">📝 Öğrendiklerim / Notlarım</h3>
             <textarea class="prayer-note" id="yatirim-notes" placeholder="Kripto/yatırım hakkında öğrendiklerini buraya not al..." oninput="saveYatirimNotes(this.value)" style="min-height:100px;"></textarea>
 
-            <h3 style="margin:20px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">📚 Yatırım Öğrenme Takibi</h3>
+            <h3 style="margin:20px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">📚 Yatırım Öğrenme Takibi <span style="font-size:0.8rem; color:var(--text-muted);" id="yatirimStudy-count">0 ders</span></h3>
             <div class="form-row">
-                <input type="text" id="new-yatirim-study-subject" placeholder="Ana başlık (örn: Bitcoin, Teknik Analiz, Risk Yönetimi)">
-                <button class="btn-action btn-primary" onclick="addYatirimStudySubject()">+ Başlık Ekle</button>
+                <input type="text" id="new-yatirimStudy-subject" placeholder="Ders adı (örn: Bitcoin, Teknik Analiz, Risk Yönetimi)">
+                <button class="btn-action btn-primary" onclick="addYatirimStudySubject()">+ Ders Ekle</button>
             </div>
-            <div id="yatirim-study-list" class="yatirim-study-list"></div>
+            <div id="yatirimStudy-insights"></div>
+            <div id="yatirimStudy-subjects-list" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
         </div>
     </main>
 
