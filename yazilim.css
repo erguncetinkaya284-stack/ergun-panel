@@ -1,1 +1,101 @@
 /* 💻 Yazılım Projeleri modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
+
+.yazilim-toolbar {
+	display: grid;
+	grid-template-columns: minmax(0, 2fr) repeat(2, minmax(150px, 1fr));
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.yazilim-toolbar input,
+.yazilim-toolbar input[type="number"],
+.yazilim-toolbar select,
+.yazilim-toolbar textarea,
+.yazilim-project-meta input[type="number"],
+.yazilim-project-meta input,
+.yazilim-project-meta input[type="url"],
+.yazilim-project-meta select,
+.yazilim-project-meta textarea {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 8px 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	background: #121212;
+	color: var(--text-main);
+	font-size: 0.82rem;
+}
+
+#module-yazilim input[type="number"],
+#module-yazilim input[type="text"],
+#module-yazilim input[type="url"],
+#module-yazilim input[type="search"],
+#module-yazilim select,
+#module-yazilim textarea {
+	background: #121212;
+	color: var(--text-main);
+	border-color: var(--border-color);
+}
+
+#module-yazilim input[type="number"]::placeholder,
+#module-yazilim input[type="text"]::placeholder,
+#module-yazilim input[type="url"]::placeholder,
+#module-yazilim input[type="search"]::placeholder,
+#module-yazilim textarea::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+
+.yazilim-project-meta textarea {
+	min-height: 58px;
+	resize: vertical;
+}
+
+.yazilim-toolbar input::placeholder,
+.yazilim-toolbar textarea::placeholder,
+.yazilim-project-meta input::placeholder,
+.yazilim-project-meta textarea::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+
+.yazilim-toolbar input:focus,
+.yazilim-toolbar textarea:focus,
+.yazilim-toolbar select:focus,
+.yazilim-project-meta input:focus,
+.yazilim-project-meta select:focus,
+.yazilim-project-meta textarea:focus {
+	border-color: var(--accent-blue);
+	outline: 2px solid rgba(74, 163, 255, 0.16);
+}
+
+.yazilim-project-meta {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 6px;
+	margin-top: 8px;
+}
+
+.yazilim-project-meta .wide {
+	grid-column: 1 / -1;
+}
+
+.yazilim-task-meta {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	margin-top: 5px;
+	color: var(--text-muted);
+	font-size: 0.78rem;
+}
+
+@media (max-width: 650px) {
+	.yazilim-toolbar,
+	.yazilim-project-meta {
+		grid-template-columns: 1fr;
+	}
+
+	.yazilim-project-meta .wide {
+		grid-column: auto;
+	}
+}

@@ -1,1 +1,51 @@
-/* 📚 KPSS Takibi modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
+/* KPSS ders hiyerarşisi */
+.kpss-subject-card > div:first-child {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.kpss-subject-card > div:first-child > strong {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.kpss-subject-card .toggle-arrow {
+	margin-right: 2px;
+	transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.kpss-subject-content {
+	max-height: 2000px;
+	overflow: hidden;
+	opacity: 1;
+	transition: max-height 0.4s ease, opacity 0.25s ease;
+}
+
+.kpss-subject-card.collapsed .kpss-subject-content {
+	max-height: 0;
+	opacity: 0;
+}
+
+.kpss-subject-card.collapsed .toggle-arrow {
+	transform: rotate(-90deg);
+}
+
+.kpss-subject-card .form-row {
+	margin-top: 2px;
+}
+
+.kpss-subject-card .prayer-card {
+	box-shadow: inset 3px 0 0 rgba(52, 152, 219, 0.25);
+}
+
+@media (max-width: 560px) {
+	.kpss-subject-card > div:first-child {
+		align-items: flex-start;
+	}
+
+	.kpss-subject-card > div:first-child > strong {
+		min-width: 0;
+	}
+}

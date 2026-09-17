@@ -1,1 +1,122 @@
 /* 🌾 Tarım Takibi modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
+
+.tarim-machine-tags,
+.tarim-service-job-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 6px;
+}
+
+.tarim-machine-form,
+.tarim-service-form {
+	border-left: 3px solid var(--accent-green);
+}
+
+.tarim-machine-tags {
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+.tarim-machine-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 9px;
+	border: 1px solid rgba(46, 204, 113, 0.35);
+	border-radius: 6px;
+	background: rgba(46, 204, 113, 0.08);
+	color: var(--text-main);
+	font-size: 0.8rem;
+}
+
+.tarim-job-toolbar {
+	display: grid;
+	grid-template-columns: minmax(0, 2fr) repeat(4, minmax(120px, 1fr));
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.tarim-job-toolbar input,
+.tarim-job-toolbar select,
+.tarim-machine-form input,
+.tarim-machine-form select,
+.tarim-service-form input,
+.tarim-service-form select,
+.tarim-service-form textarea {
+	box-sizing: border-box;
+	width: 100%;
+	background: #121212;
+	border: 1px solid var(--border-color);
+	color: var(--text-main);
+	padding: 8px 10px;
+	border-radius: 6px;
+	font-size: 0.82rem;
+}
+
+.tarim-job-toolbar input::placeholder,
+.tarim-machine-form input::placeholder,
+.tarim-service-form input::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+
+.tarim-job-toolbar input:focus,
+.tarim-job-toolbar select:focus,
+.tarim-machine-form input:focus,
+.tarim-machine-form select:focus,
+.tarim-service-form input:focus,
+.tarim-service-form select:focus {
+	border-color: var(--accent-blue);
+	outline: 2px solid rgba(74, 163, 255, 0.16);
+}
+
+.tarim-job-preview,
+.tarim-job-stats {
+	padding: 9px 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 7px;
+	background: var(--surface-color);
+	color: var(--text-muted);
+	font-size: 0.82rem;
+}
+
+.tarim-job-stats {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.tarim-job-stat strong,
+.tarim-job-stat span {
+	display: block;
+}
+
+.tarim-job-stat strong {
+	color: var(--accent-gold);
+	font-size: 0.95rem;
+}
+
+.tarim-job-stat span {
+	font-size: 0.7rem;
+}
+
+.tarim-job-card {
+	display: grid;
+	gap: 6px;
+}
+
+@media (max-width: 800px) {
+	.tarim-job-toolbar,
+	.tarim-job-stats {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 560px) {
+	.tarim-job-toolbar,
+	.tarim-job-stats {
+		grid-template-columns: 1fr;
+	}
+}

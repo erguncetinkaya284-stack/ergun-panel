@@ -1,1 +1,61 @@
-/* 📖 Ders Takibi modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
+/* Ders modülünün hiyerarşik çalışma alanı */
+#module-ders > .form-row {
+	margin-top: 2px;
+}
+
+#module-ders #ders-subjects-list {
+	margin-top: 4px !important;
+}
+
+#module-ders #ders-subjects-list > .prayer-card {
+	border-radius: 8px;
+	box-shadow: inset 3px 0 0 rgba(241, 196, 15, 0.2);
+	transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+#module-ders #ders-subjects-list > .prayer-card:hover {
+	border-color: var(--accent-gold) !important;
+	transform: translateY(-1px);
+}
+
+#module-ders #ders-subjects-list > .prayer-card > div:first-child {
+	min-height: 28px;
+}
+
+#module-ders #ders-subjects-list > .prayer-card > div:not(:first-child) {
+	margin-top: 2px;
+}
+
+#module-ders #ders-subjects-list .prayer-card .prayer-card {
+	box-shadow: inset 3px 0 0 rgba(52, 152, 219, 0.2);
+}
+
+#module-ders #ders-subjects-list .prayer-card .prayer-card .prayer-card {
+	box-shadow: inset 3px 0 0 rgba(46, 204, 113, 0.2);
+}
+
+#module-ders .toggle-arrow {
+	transition: transform 0.25s ease;
+}
+
+#module-ders .form-row {
+	margin-top: 2px;
+}
+
+#module-ders textarea {
+	line-height: 1.45;
+}
+
+@media (max-width: 560px) {
+	#module-ders #ders-subjects-list .prayer-card > div:first-child {
+		align-items: flex-start !important;
+	}
+
+	#module-ders #ders-subjects-list .prayer-card > div:first-child > strong {
+		min-width: 0;
+	}
+
+	#module-ders #ders-subjects-list .prayer-card > div:first-child .btn-action {
+		flex-shrink: 0;
+	}
+}

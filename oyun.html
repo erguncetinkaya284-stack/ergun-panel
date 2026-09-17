@@ -25,33 +25,40 @@
 <div class="module-box" id="module-oyun">
             <div class="module-header">
                 <h2><span class="toggle-arrow" onclick="toggleModule(this)">▶</span>🎶 Oyun Havaları & Müzik</h2>
-                <span style="font-size:0.8rem; color:var(--text-muted);">Canlı Liste</span>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="oyun-count">0 kayıt</span>
             </div>
-            <div class="playlist">
-                <div class="song-item playing">
-                    <span>Ankara Rüzgarı - Hüdayda</span>
-                    <button class="btn-action btn-primary" style="padding: 3px 8px; font-size: 0.75rem;">Çalıyor</button>
+            <div class="oyun-form">
+                <input type="text" id="oyun-title" placeholder="Oyun havası adı">
+                <div class="form-row">
+                    <input type="text" id="oyun-region" placeholder="Yöre (örn: Ankara)">
+                    <input type="text" id="oyun-type" placeholder="Tür (örn: Zeybek)">
                 </div>
-                <div class="song-item">
-                    <span>Misket Havası</span>
-                    <button class="btn-action" style="padding: 3px 8px; font-size: 0.75rem;" onclick="togglePlay(this)">Oynat</button>
-                </div>
-                <div class="song-item">
-                    <span>Sille Oyunu</span>
-                    <button class="btn-action" style="padding: 3px 8px; font-size: 0.75rem;" onclick="togglePlay(this)">Oynat</button>
-                </div>
-                <div class="song-item">
-                    <span>Zeybek Havası</span>
-                    <button class="btn-action" style="padding: 3px 8px; font-size: 0.75rem;" onclick="togglePlay(this)">Oynat</button>
-                </div>
+                <input type="url" id="oyun-youtube" placeholder="YouTube bağlantısı (opsiyonel)">
+                <select id="oyun-status">
+                    <option value="Dinlendi">Dinlendi</option>
+                    <option value="Öğreniliyor">Öğreniliyor</option>
+                    <option value="Tamamlandı">Tamamlandı</option>
+                </select>
+                <button class="btn-action btn-primary" id="oyun-save-btn" onclick="saveOyunHavasi()">Kaydet</button>
             </div>
+            <div class="oyun-toolbar">
+                <input type="search" id="oyun-search" placeholder="Oyun havası ara..." oninput="renderOyunHavalari()">
+                <select id="oyun-filter" onchange="renderOyunHavalari()">
+                    <option value="all">Tüm kayıtlar</option>
+                    <option value="favorites">Favoriler</option>
+                    <option value="Dinlendi">Dinlendi</option>
+                    <option value="Öğreniliyor">Öğreniliyor</option>
+                    <option value="Tamamlandı">Tamamlandı</option>
+                </select>
+            </div>
+            <div id="oyun-list"></div>
         </div>
     </main>
 
     <script src="shared.js"></script>
     <script src="oyun.js"></script>
     <script>
-        function renderModule() { /* bu modülde dinamik render yok */ }
+        function renderModule() { renderOyunHavalari(); }
 
         window.onload = function() {
             renderModule();

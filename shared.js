@@ -1,5 +1,5 @@
         // Modül kutusunu aç/kapa (üçgen ikonuna tıklanınca) ve durumu kalıcı olarak kaydet
-        const MODULE_IDS = ['module-ibadet', 'module-gunluk', 'module-fitness', 'module-spor', 'module-dovus', 'module-kpss', 'module-yks', 'module-dil', 'module-tarif', 'module-enstruman', 'module-tasarim', 'module-oyun', 'module-tarim', 'module-blog', 'module-kitap', 'module-yazilim', 'module-kiraathane', 'module-cari', 'module-yatirim', 'module-sut', 'module-manav', 'module-et', 'module-tekstil', 'module-teknoloji', 'module-arac', 'module-gayrimenkul'];
+        const MODULE_IDS = ['module-ibadet', 'module-gunluk', 'module-fitness', 'module-dovus', 'module-kpss', 'module-yks', 'module-dil', 'module-tarif', 'module-enstruman', 'module-tasarim', 'module-oyun', 'module-tarim', 'module-blog', 'module-kitap', 'module-yazilim', 'module-kiraathane', 'module-cari', 'module-yatirim', 'module-sut', 'module-manav', 'module-et', 'module-tekstil', 'module-teknoloji', 'module-arac', 'module-gayrimenkul'];
 
         function toggleModule(arrow) {
             const box = arrow.closest('.module-box');
@@ -65,14 +65,14 @@
         // Kalıcı olarak saklanacak tüm modül verilerinin (kategoriler, projeler, görevler, satışlar, sayaçlar vb.) listesi
         const ALL_STATE_VARS = [
             'scheduleItems','scheduleIdCounter','scheduleViewMode',
+            'oyunHavalari','oyunIdCounter',
             'tasarimSubjects','tasarimSubjectIdCounter','tasarimTopics','tasarimTopicIdCounter','tasarimUnits','tasarimUnitIdCounter','tasarimQuestionIdCounter','tasarimQuizAnswers',
             'productCatalog','catalogIdCounter','salesTables','tableIdCounter','salesTabs','tabIdCounter','itemIdCounter',
             'timeCategories','typeCategories','recipes','recipeIdCounter',
-            'langCategories','topicCategories','langItems','langIdCounter',
+            'langCategories','topicCategories','langItems','langIdCounter','langActivityHistory',
             'combatCategories','combatItems','combatIdCounter',
             'instrumentCategories','lessonCategories','instrumentItems','instrumentIdCounter',
             'fitnessCategories','fitnessItems','fitnessIdCounter','bodyMeasurements','measurementIdCounter',
-            'sporVariants','sporItems','sporIdCounter',
             'prayerData','cumaData','ramazanModeOn','teravihData','quranDuraks','quranDurakIdCounter','quranRepeatCount','elifbaPages','elifbaPageIdCounter','prayerHistory',
             'tekstilBrands','tekstilSizes','tekstilSeasons','tekstilVariants','tekstilProducts','tekstilIdCounter',
             'aracCategories','aracItems','aracItemIdCounter',
@@ -80,17 +80,17 @@
             'manavTypes','manavStockMap','manavPriceMap','manavSales','manavSaleIdCounter',
             'sutTypes','sutStockMap','sutPriceMap','sutSales','sutSaleIdCounter',
             'kpssSubjects','kpssSubjectIdCounter','kpssTopics','kpssTopicIdCounter','kpssUnits','kpssUnitIdCounter','kpssQuestionIdCounter','kpssQuizAnswers',
-            'dersSubjects','dersSubjectIdCounter','dersTopics','dersTopicIdCounter','dersUnits','dersUnitIdCounter','dersQuestionIdCounter','dersQuizAnswers',
             'yksSubjects','yksSubjectIdCounter','yksTopics','yksTopicIdCounter','yksUnits','yksUnitIdCounter','yksQuestionIdCounter','yksQuizAnswers',
             'blogTopics','blogTopicIdCounter','blogAltIdCounter',
-            'tarlalar','tarlaIdCounter','hasatlar','hasatIdCounter','sulamaMap','tohumTypes','tohumStockMap','tohumUseMap','belgeler','belgeIdCounter','havaNotlari','havaNoteIdCounter',
+            'tarlalar','tarlaIdCounter','hasatlar','hasatIdCounter','sulamaMap','tohumTypes','tohumStockMap','tohumUseMap','belgeler','belgeIdCounter','havaNotlari','havaNoteIdCounter','tarimMachines','tarimMachineIdCounter','tarimServiceJobs','tarimServiceJobIdCounter',
             'cariCustomers','cariCustomerIdCounter','cariTx','cariTxIdCounter',
             'teknolojiCategories','teknolojiItems','teknolojiItemIdCounter',
             'yazilimCategories','yazilimCategoryIdCounter','yazilimProjects','yazilimProjectIdCounter','yazilimTasks','yazilimTaskIdCounter','yazilimChecklistIdCounter',
             'books','bookIdCounter','bookPageIdCounter',
             'siirler','siirIdCounter',
             'suruItems','suruIdCounter','suruTypes',
-            'yatirimCategories','yatirimItems','yatirimItemIdCounter','yatirimNotes',
+            'yatirimCategories','yatirimItems','yatirimItemIdCounter','yatirimNotes','yatirimStudySubjects','yatirimStudySubjectIdCounter','yatirimStudyTopicIdCounter','yatirimStudyUnitIdCounter','yatirimStudyQuestionIdCounter',
+            'dersSubjects','dersSubjectIdCounter','dersTopics','dersTopicIdCounter','dersUnits','dersUnitIdCounter','dersQuestionIdCounter','dersQuizAnswers',
             'evDoluCount','dukkanDoluCount',
             'moduleVisibility','moduleOrder'
         ];

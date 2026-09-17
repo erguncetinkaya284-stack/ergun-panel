@@ -1,1 +1,71 @@
 /* 🌍 Yabancı Dil Takibi modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
+
+.lang-review-summary {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin: 12px 0;
+}
+
+.lang-review-badge {
+	padding: 8px 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	background: var(--surface-color);
+	color: var(--text-muted);
+	font-size: 0.8rem;
+}
+
+.lang-review-badge strong {
+	color: var(--accent-gold);
+}
+
+.lang-card-answer {
+	margin-top: 8px;
+	padding: 8px 10px;
+	border-left: 3px solid var(--accent-blue);
+	background: rgba(74, 163, 255, 0.08);
+	white-space: pre-wrap;
+}
+
+.lang-review-actions {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	margin-top: 8px;
+}
+
+.lang-daily-stats {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+	margin: 0 0 12px;
+}
+
+.lang-daily-stat {
+	padding: 8px 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	background: var(--surface-color);
+}
+
+.lang-daily-stat strong,
+.lang-daily-stat span {
+	display: block;
+}
+
+.lang-daily-stat strong {
+	color: var(--accent-blue);
+	font-size: 1.05rem;
+}
+
+.lang-daily-stat span {
+	color: var(--text-muted);
+	font-size: 0.72rem;
+}
+
+@media (max-width: 560px) {
+	.lang-daily-stats {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}

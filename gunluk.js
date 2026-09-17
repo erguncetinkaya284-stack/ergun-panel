@@ -191,7 +191,6 @@
             };
 
             addGroup('Fitness', typeof fitnessItems !== 'undefined' ? fitnessItems : null, 'title');
-            addGroup('Spor', typeof sporItems !== 'undefined' ? sporItems : null, 'title');
             addGroup('Dövüş/Teknik', typeof combatItems !== 'undefined' ? combatItems : null, 'title');
             addGroup('KPSS', typeof kpssUnits !== 'undefined' ? kpssUnits : null, 'name');
             addGroup('YKS', typeof yksUnits !== 'undefined' ? yksUnits : null, 'name');
@@ -226,6 +225,32 @@
             if (!select || !select.value) return;
             document.getElementById('schedule-name').value = select.value;
             select.value = '';
+        }
+
+        function renderScheduleTodaySummary() {
+            const wrap = document.getElementById('schedule-today-summary');
+            if (!wrap) return;
+
+            const today = todayStr();
+            const totalItems = scheduleItems.length;
+            const completedItems = scheduleItems.filter(item => (item.log[today] || 0) >= item.target).length;
+            const totalTarget = scheduleItems.reduce((sum, item) => sum + item.target, 0);
+            const totalDone = scheduleItems.reduce((sum, item) => sum + Math.min(item.log[today] || 0, item.target), 0);
+            const percentage = totalTarget ? Math.round((totalDone / totalTarget) * 100) : 0;
+
+            wrap.innerHTML = `
+                <div class="schedule-summary-card">
+                    <strong>Bugünün Özeti</strong>
+                    <span>${completedItems}/${totalItems} madde tamamlandı</span>
+                </div>
+                <div class="schedule-summary-card">
+                    <strong>${totalDone}/${totalTarget}</strong>
+                    <span>hedef tekrarı</span>
+                </div>
+                <div class="schedule-summary-card schedule-summary-progress">
+                    <strong>%${percentage}</strong>
+                    <div class="schedule-progress-track"><div style="width:${percentage}%"></div></div>
+                </div>`;
         }
 
         function renderScheduleCard(item) {
@@ -285,6 +310,7 @@
 
         function renderSchedule() {
             renderScheduleSourceSelect();
+            renderScheduleTodaySummary();
 
             const listSection = document.getElementById('schedule-list-section');
             const tableWrap = document.getElementById('schedule-table-wrap');

@@ -37,6 +37,38 @@
                 <button class="btn-action btn-primary" onclick="addBlogTopic()">+ Ana Başlık Ekle</button>
             </div>
 
+            <div class="blog-topic-form">
+                <select id="new-blog-category">
+                    <option value="">Kategori seç (opsiyonel)</option>
+                    <option value="Kişisel">Kişisel</option>
+                    <option value="Bilgi">Bilgi</option>
+                    <option value="Proje">Proje</option>
+                    <option value="Günlük">Günlük</option>
+                </select>
+                <input type="text" id="new-blog-tags" placeholder="Etiketler (virgülle ayır: sağlık, eğitim)">
+                <select id="new-blog-status">
+                    <option value="Taslak">Taslak</option>
+                    <option value="Yayında">Yayında</option>
+                </select>
+                <input type="number" id="new-blog-reading-minutes" min="1" placeholder="Okuma süresi (dk)">
+            </div>
+
+            <div class="blog-stats" id="blog-stats"></div>
+
+            <div class="blog-toolbar">
+                <input type="search" id="blog-search" placeholder="Yazılarda ara..." oninput="renderBlog()">
+                <select id="blog-filter-category" onchange="renderBlog()"><option value="all">Tüm kategoriler</option></select>
+                <select id="blog-filter-status" onchange="renderBlog()">
+                    <option value="all">Tüm durumlar</option>
+                    <option value="Taslak">Taslak</option>
+                    <option value="Yayında">Yayında</option>
+                </select>
+                <select id="blog-filter-favorite" onchange="renderBlog()">
+                    <option value="all">Tüm yazılar</option>
+                    <option value="favorites">Favoriler</option>
+                </select>
+            </div>
+
             <div id="blog-list" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
         </div>
     </main>

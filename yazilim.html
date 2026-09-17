@@ -33,6 +33,22 @@
                 <button class="btn-action btn-primary" onclick="addYazilimCategory()">+ Kategori Ekle</button>
             </div>
 
+            <div class="yazilim-toolbar">
+                <input type="search" id="yazilim-search" placeholder="Proje veya görev ara..." oninput="renderYazilim()">
+                <select id="yazilim-status-filter" onchange="renderYazilim()">
+                    <option value="all">Tüm proje durumları</option>
+                    <option value="Planlandı">Planlandı</option>
+                    <option value="Devam Ediyor">Devam Ediyor</option>
+                    <option value="Tamamlandı">Tamamlandı</option>
+                </select>
+                <select id="yazilim-priority-filter" onchange="renderYazilim()">
+                    <option value="all">Tüm öncelikler</option>
+                    <option value="Yüksek">Yüksek</option>
+                    <option value="Orta">Orta</option>
+                    <option value="Düşük">Düşük</option>
+                </select>
+            </div>
+
             <div id="yazilim-categories-list" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
         </div>
     </main>

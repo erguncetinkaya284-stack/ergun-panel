@@ -63,6 +63,69 @@
                 Toplam Gelir: 0 ₺ — Toplam Masraf: 0 ₺ — Net Kâr/Zarar: 0 ₺
             </div>
 
+                <!-- Makine Hizmet ve Mahsup Takibi -->
+                <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">🚜 Makine Hizmet ve Mahsup Takibi</h3>
+                <div class="recipe-form tarim-machine-form">
+                    <div class="form-row">
+                        <input type="text" id="tarim-machine-name" placeholder="Makine adı (örn: Biçerdöver)">
+                        <input type="text" id="tarim-machine-type" placeholder="Makine türü (örn: Hasat)">
+                        <select id="tarim-machine-pricing">
+                            <option value="Dönüm başı">Dönüm başı</option>
+                            <option value="Saatlik">Saatlik</option>
+                            <option value="Adet başı">Adet başı</option>
+                            <option value="Ton başı">Ton başı</option>
+                            <option value="Sabit ücret">Sabit ücret</option>
+                        </select>
+                    </div>
+                    <button class="btn-action btn-primary" onclick="addTarimMachine()">+ Makine Ekle</button>
+                </div>
+                <div id="tarim-machine-list" class="tarim-machine-tags"></div>
+
+                <div class="recipe-form tarim-service-form">
+                    <div class="form-row">
+                        <input type="text" id="tarim-job-customer" placeholder="İş sahibi / müşteri">
+                        <select id="tarim-job-field"></select>
+                        <input type="date" id="tarim-job-date">
+                    </div>
+                    <div class="form-row">
+                        <select id="tarim-job-machine"></select>
+                        <input type="text" id="tarim-job-work" placeholder="Yapılan iş (biçim, balya, gübre dağıtma...)" oninput="updateTarimJobPreview()">
+                        <input type="text" id="tarim-job-quantity" placeholder="Hizmet miktarı" oninput="updateTarimJobPreview()">
+                        <input type="text" id="tarim-job-unit-price" placeholder="Birim fiyat (₺)" oninput="updateTarimJobPreview()">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="tarim-job-fuel" placeholder="Mazot gideri (₺)" oninput="updateTarimJobPreview()">
+                        <input type="text" id="tarim-job-labor" placeholder="İşçilik gideri (₺)" oninput="updateTarimJobPreview()">
+                        <input type="text" id="tarim-job-transport" placeholder="Nakliye gideri (₺)" oninput="updateTarimJobPreview()">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="tarim-job-product" placeholder="Alınan ürün (saman, balya, silaj...)" oninput="updateTarimJobPreview()">
+                        <input type="text" id="tarim-job-product-quantity" placeholder="Ürün miktarı" oninput="updateTarimJobPreview()">
+                        <input type="text" id="tarim-job-product-unit" placeholder="Birim (adet, kg, ton)" oninput="updateTarimJobPreview()">
+                        <input type="text" id="tarim-job-product-price" placeholder="Ürün birim fiyatı (₺)" oninput="updateTarimJobPreview()">
+                    </div>
+                    <div class="form-row">
+                        <select id="tarim-job-status">
+                            <option value="Bekliyor">Bekliyor</option>
+                            <option value="Kısmen ödendi">Kısmen ödendi</option>
+                            <option value="Ödendi">Ödendi</option>
+                            <option value="Mahsup edildi">Mahsup edildi</option>
+                        </select>
+                        <input type="text" id="tarim-job-note" placeholder="Not">
+                    </div>
+                    <div id="tarim-job-preview" class="tarim-job-preview"></div>
+                    <button class="btn-action btn-primary" onclick="addTarimServiceJob()">+ İş Kaydı Ekle</button>
+                </div>
+                <div class="tarim-job-toolbar">
+                    <input type="search" id="tarim-job-search" placeholder="İş, müşteri veya ürün ara..." oninput="renderTarimServiceJobs()">
+                    <select id="tarim-job-customer-filter" onchange="renderTarimServiceJobs()"><option value="all">Tüm müşteriler</option></select>
+                    <select id="tarim-job-machine-filter" onchange="renderTarimServiceJobs()"><option value="all">Tüm makineler</option></select>
+                    <select id="tarim-job-work-filter" onchange="renderTarimServiceJobs()"><option value="all">Tüm işler</option></select>
+                    <select id="tarim-job-status-filter" onchange="renderTarimServiceJobs()"><option value="all">Tüm durumlar</option></select>
+                </div>
+                <div id="tarim-job-stats" class="tarim-job-stats"></div>
+                <div id="tarim-service-job-list" class="tarim-service-job-list"></div>
+
             <!-- Sulama Takvimi -->
             <h3 style="margin:16px 0 6px 0; font-size:0.9rem; color:var(--text-muted);">💧 Sulama Takvimi</h3>
             <div id="sulama-list" style="display:flex; flex-direction:column; gap:8px;"></div>

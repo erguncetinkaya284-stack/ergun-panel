@@ -1,1 +1,22 @@
 /* ✒️ Şiir modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
+
+#module-siir #siir-search {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 9px 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	background: #121212;
+	color: var(--text-main);
+	font-size: 0.85rem;
+}
+
+#module-siir #siir-search::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+
+#module-siir #siir-search:focus {
+	border-color: var(--accent-blue);
+	outline: 2px solid rgba(74, 163, 255, 0.16);
+}

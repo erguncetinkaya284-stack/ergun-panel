@@ -1,5 +1,57 @@
 /* ⏰🔥 Günlük Program & Alışkanlık Takibi modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
 
+.schedule-today-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.schedule-summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--surface-color);
+    font-size: 0.78rem;
+}
+
+.schedule-summary-card strong {
+    color: var(--accent-gold);
+    font-size: 0.95rem;
+}
+
+.schedule-summary-card span {
+    color: var(--text-muted);
+}
+
+.schedule-summary-progress strong {
+    color: var(--accent-green);
+}
+
+.schedule-progress-track {
+    height: 6px;
+    margin-top: 3px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: var(--border-color);
+}
+
+.schedule-progress-track div {
+    height: 100%;
+    background: var(--accent-green);
+    transition: width 0.2s ease;
+}
+
+@media (max-width: 560px) {
+    .schedule-today-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
 .excel-cell {
     border: 1px solid var(--border-color);
     transition: background 0.1s ease;

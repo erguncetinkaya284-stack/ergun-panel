@@ -10,6 +10,35 @@
         let blogUndoStack = [];
         let blogOpenTopicId = null;
 
+        function ensureBlogTopicMeta(topic) {
+            if (!topic.status) topic.status = 'Taslak';
+            if (!topic.category) topic.category = '';
+            if (!Array.isArray(topic.tags)) topic.tags = [];
+            if (typeof topic.favorite !== 'boolean') topic.favorite = false;
+            if (typeof topic.readingMinutes !== 'number') topic.readingMinutes = 0;
+        }
+
+        function renderBlogMarkdown(value) {
+            const escaped = String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            return escaped
+                .replace(/^### (.+)$/gm, '<strong>$1</strong>')
+                .replace(/^## (.+)$/gm, '<strong>$1</strong>')
+                .replace(/^# (.+)$/gm, '<strong>$1</strong>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/`(.+?)`/g, '<code>$1</code>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function isBlogTopicComplete(topic) {
+            return !!topic.giris.trim()
+                && topic.altBasliklar.length > 0
+                && topic.altBasliklar.every(alt => alt.aciklama.trim());
+        }
+
         function snapshotBlog() {
             blogUndoStack.push(JSON.stringify({ blogTopics }));
             if (blogUndoStack.length > 30) blogUndoStack.shift();
@@ -37,9 +66,17 @@
             const input = document.getElementById('new-blog-title');
             const title = input.value.trim();
             if (!title) { alert('Ana Başlık boş olamaz.'); return; }
+            const category = document.getElementById('new-blog-category').value;
+            const tags = document.getElementById('new-blog-tags').value.split(',').map(tag => tag.trim()).filter(Boolean);
+            const status = document.getElementById('new-blog-status').value;
+            const readingMinutes = Math.max(0, parseInt(document.getElementById('new-blog-reading-minutes').value) || 0);
             snapshotBlog();
-            blogTopics.push({ id: blogTopicIdCounter++, title, giris: '', altBasliklar: [] });
+            blogTopics.push({ id: blogTopicIdCounter++, title, giris: '', altBasliklar: [], category, tags, status, favorite: false, readingMinutes });
             input.value = '';
+            document.getElementById('new-blog-category').value = '';
+            document.getElementById('new-blog-tags').value = '';
+            document.getElementById('new-blog-status').value = 'Taslak';
+            document.getElementById('new-blog-reading-minutes').value = '';
             renderBlog();
         }
 
@@ -54,6 +91,43 @@
         function toggleBlogTopicOpen(topicId) {
             blogOpenTopicId = (blogOpenTopicId === topicId) ? null : topicId;
             renderBlog();
+        }
+
+        function toggleBlogFavorite(topicId) {
+            const topic = findBlogTopic(topicId);
+            if (!topic) return;
+            snapshotBlog();
+            ensureBlogTopicMeta(topic);
+            topic.favorite = !topic.favorite;
+            renderBlog();
+        }
+
+        function saveBlogTopicMeta(topicId) {
+            const topic = findBlogTopic(topicId);
+            if (!topic) return;
+            const category = document.getElementById('blog-category-' + topicId);
+            const tags = document.getElementById('blog-tags-' + topicId);
+            const status = document.getElementById('blog-status-' + topicId);
+            const readingMinutes = document.getElementById('blog-reading-minutes-' + topicId);
+            if (!category || !tags || !status || !readingMinutes) return;
+            snapshotBlog();
+            topic.category = category.value;
+            topic.tags = tags.value.split(',').map(tag => tag.trim()).filter(Boolean);
+            topic.status = status.value;
+            topic.readingMinutes = Math.max(0, parseInt(readingMinutes.value) || 0);
+            renderBlog();
+        }
+
+        function renderBlogFilterOptions() {
+            const select = document.getElementById('blog-filter-category');
+            if (!select) return;
+            const selected = select.value;
+            const categories = [...new Set(blogTopics.map(topic => {
+                ensureBlogTopicMeta(topic);
+                return topic.category;
+            }).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr'));
+            select.innerHTML = '<option value="all">Tüm kategoriler</option>' + categories.map(category => `<option value="${category.replace(/"/g, '&quot;')}">${category}</option>`).join('');
+            select.value = categories.includes(selected) ? selected : 'all';
         }
 
         function saveBlogGiris(topicId) {
@@ -172,14 +246,37 @@
 
         function renderBlog() {
             const wrap = document.getElementById('blog-list');
+            const search = (document.getElementById('blog-search')?.value || '').trim().toLocaleLowerCase('tr-TR');
+            const categoryFilter = document.getElementById('blog-filter-category')?.value || 'all';
+            const statusFilter = document.getElementById('blog-filter-status')?.value || 'all';
+            const favoriteFilter = document.getElementById('blog-filter-favorite')?.value || 'all';
+            blogTopics.forEach(ensureBlogTopicMeta);
+            renderBlogFilterOptions();
             const totalAlt = blogTopics.reduce((sum, t) => sum + t.altBasliklar.length, 0);
             document.getElementById('blog-count').innerText = `${blogTopics.length} ana başlık, ${totalAlt} alt başlık`;
+            const completedCount = blogTopics.filter(isBlogTopicComplete).length;
+            const draftCount = blogTopics.filter(topic => topic.status === 'Taslak').length;
+            document.getElementById('blog-stats').innerHTML = `
+                <div class="blog-stat"><strong>${blogTopics.length}</strong><span>Toplam yazı</span></div>
+                <div class="blog-stat"><strong>${completedCount}</strong><span>Tamamlanan</span></div>
+                <div class="blog-stat"><strong>${draftCount}</strong><span>Taslak</span></div>`;
 
-            wrap.innerHTML = blogTopics.length ? blogTopics.map((topic, idx) => {
+            const visibleTopics = blogTopics.filter(topic => {
+                const searchable = `${topic.title} ${topic.giris} ${topic.category} ${topic.tags.join(' ')} ${topic.altBasliklar.map(alt => `${alt.baslik} ${alt.aciklama}`).join(' ')}`.toLocaleLowerCase('tr-TR');
+                return (!search || searchable.includes(search))
+                    && (categoryFilter === 'all' || topic.category === categoryFilter)
+                    && (statusFilter === 'all' || topic.status === statusFilter)
+                    && (favoriteFilter !== 'favorites' || topic.favorite);
+            });
+
+            wrap.innerHTML = visibleTopics.length ? visibleTopics.map((topic) => {
+                const idx = blogTopics.indexOf(topic);
                 const topicNo = idx + 1;
                 const tamamlanan = topic.altBasliklar.filter(a => a.aciklama.trim()).length;
                 const toplam = topic.altBasliklar.length;
                 const isOpen = blogOpenTopicId === topic.id;
+                const tagsHtml = topic.tags.map(tag => `<span class="category-tag type-tag">${tag}</span>`).join('');
+                const readingHtml = topic.readingMinutes ? `⏱️ ${topic.readingMinutes} dk okuma` : '⏱️ Okuma süresi belirtilmedi';
 
                 const altRows = topic.altBasliklar.map(alt => {
                     const no = `${topicNo}.${topic.altBasliklar.indexOf(alt) + 1}`;
@@ -194,6 +291,7 @@
                             </div>
                         </div>
                         <textarea id="blog-alt-aciklama-${topic.id}-${alt.id}" rows="4" placeholder="Bu alt başlığın açıklaması (akıcı blog metni)..." style="width:100%; margin-top:6px;">${alt.aciklama}</textarea>
+                        ${done ? `<div class="blog-markdown-preview">${renderBlogMarkdown(alt.aciklama)}</div>` : ''}
                         <button class="btn-action btn-primary" style="margin-top:6px;" onclick="saveAltAciklama(${topic.id}, ${alt.id})">Kaydet</button>
                     </div>`;
                 }).join('') || '<span style="color:var(--text-muted); font-size:0.85rem;">Henüz alt başlık eklenmedi.</span>';
@@ -202,19 +300,38 @@
                 <div class="prayer-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                         <strong style="cursor:pointer;" onclick="toggleBlogTopicOpen(${topic.id})">${isOpen ? '▼' : '▶'} ${topicNo}. ${topic.title}</strong>
-                        <div style="display:flex; gap:4px; align-items:center;">
+                        <div class="blog-topic-actions">
                             <span style="font-size:0.75rem; color:var(--text-muted);">${tamamlanan}/${toplam} tamamlandı</span>
+                            <button class="btn-action blog-favorite" onclick="toggleBlogFavorite(${topic.id})" aria-label="Favori">${topic.favorite ? '★' : '☆'}</button>
                             <button class="btn-action" style="color:var(--accent-red)" onclick="removeBlogTopic(${topic.id})">Sil</button>
                         </div>
                     </div>
+                    <div class="blog-topic-meta">
+                        <span class="category-tag">${topic.status}</span>
+                        ${topic.category ? `<span class="category-tag lang-tag">${topic.category}</span>` : ''}
+                        ${tagsHtml}
+                        <span style="font-size:0.75rem; color:var(--text-muted);">${readingHtml}</span>
+                    </div>
                     ${isOpen ? `
                         <div style="margin-top:10px;">
+                            <div class="blog-topic-form">
+                                <select id="blog-category-${topic.id}">
+                                    <option value="">Kategori yok</option>
+                                    ${['Kişisel', 'Bilgi', 'Proje', 'Günlük'].map(value => `<option value="${value}" ${topic.category === value ? 'selected' : ''}>${value}</option>`).join('')}
+                                </select>
+                                <input type="text" id="blog-tags-${topic.id}" value="${topic.tags.join(', ').replace(/"/g, '&quot;')}" placeholder="Etiketler (virgülle ayır)">
+                                <select id="blog-status-${topic.id}"><option value="Taslak" ${topic.status === 'Taslak' ? 'selected' : ''}>Taslak</option><option value="Yayında" ${topic.status === 'Yayında' ? 'selected' : ''}>Yayında</option></select>
+                                <input type="number" id="blog-reading-minutes-${topic.id}" min="1" value="${topic.readingMinutes || ''}" placeholder="Okuma dk">
+                            </div>
+                            <button class="btn-action btn-primary" style="margin-top:6px;" onclick="saveBlogTopicMeta(${topic.id})">Yazı Bilgilerini Kaydet</button>
                             <h4 style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Giriş Metni (3-5 cümle)</h4>
                             <textarea id="blog-giris-${topic.id}" rows="3" placeholder="Bu konunun genel tanıtımı, neden önemli olduğu, ne bulacağı..." style="width:100%;">${topic.giris}</textarea>
+                            ${topic.giris.trim() ? `<div class="blog-markdown-preview"><strong>Giriş önizleme</strong><br>${renderBlogMarkdown(topic.giris)}</div>` : ''}
                             <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
                                 <button class="btn-action btn-primary" onclick="saveBlogGiris(${topic.id})">Girişi Kaydet</button>
                                 <button class="btn-action" onclick="downloadBlogGiris(${topic.id})">📥 Girişi İndir</button>
                                 <button class="btn-action" onclick="downloadBlogTopicZip(${topic.id})">📦 Tümünü .zip İndir</button>
+                                <button class="btn-action" onclick="addToDailyProgram('Blog: ${topic.title.replace(/'/g, "\\'")} - 30 dakika yazı yaz')">📅 30 dk Yazı Yaz</button>
                             </div>
 
                             <h4 style="font-size:0.8rem; color:var(--text-muted); margin:14px 0 4px 0;">Alt Başlık Toplu Ekle (her satıra bir başlık)</h4>

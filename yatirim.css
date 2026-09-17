@@ -1,1 +1,43 @@
 /* ₿ Kripto & Yatırım Takibi modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
+.yatirim-study-list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.yatirim-study-card {
+	border-left: 3px solid var(--accent-blue);
+}
+
+.yatirim-study-form input,
+.yatirim-study-form textarea,
+.yatirim-study-form select {
+	box-sizing: border-box;
+	width: 100%;
+	margin-top: 6px;
+	padding: 8px 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	background: #121212;
+	color: var(--text-main);
+	font-size: 0.82rem;
+}
+
+.yatirim-study-form textarea {
+	min-height: 80px;
+	resize: vertical;
+}
+
+.yatirim-study-form input::placeholder,
+.yatirim-study-form textarea::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+
+.yatirim-study-form input:focus,
+.yatirim-study-form textarea:focus,
+.yatirim-study-form select:focus {
+	border-color: var(--accent-blue);
+	outline: 2px solid rgba(74, 163, 255, 0.16);
+}

@@ -1,1 +1,125 @@
 /* 🎶 Oyun Havaları & Müzik modulune ozel stiller buraya eklenebilir. Ortak stiller shared.css icinde. */
+
+.oyun-form,
+.oyun-toolbar {
+	display: grid;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.oyun-form {
+	padding: 14px;
+	border: 1px solid rgba(241, 196, 15, 0.28);
+	border-radius: 10px;
+	background: linear-gradient(135deg, rgba(241, 196, 15, 0.08), var(--surface-hover));
+	box-shadow: inset 3px 0 0 rgba(241, 196, 15, 0.5);
+}
+
+.oyun-form input,
+.oyun-form textarea,
+.oyun-form select,
+.oyun-toolbar input,
+.oyun-toolbar select {
+	min-width: 0;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 9px 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	background: #121212;
+	color: var(--text-main);
+	font-size: 0.85rem;
+}
+
+.oyun-form textarea {
+	min-height: 70px;
+	resize: vertical;
+}
+
+.oyun-form input::placeholder,
+.oyun-form textarea::placeholder,
+.oyun-toolbar input::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+
+.oyun-form input:focus,
+.oyun-form textarea:focus,
+.oyun-form select:focus,
+.oyun-toolbar input:focus,
+.oyun-toolbar select:focus {
+	border-color: var(--accent-blue);
+	outline: 2px solid rgba(74, 163, 255, 0.16);
+}
+
+.oyun-form .form-row {
+	margin: 0;
+}
+
+.oyun-toolbar {
+	grid-template-columns: minmax(0, 2fr) minmax(150px, 1fr);
+	padding: 8px 0;
+	margin-bottom: 12px;
+}
+
+.oyun-toolbar input,
+.oyun-toolbar select {
+	background: var(--surface-hover);
+}
+
+.oyun-card {
+	display: grid;
+	gap: 8px;
+	margin-bottom: 10px;
+	border-left: 3px solid var(--accent-gold);
+	transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.oyun-card:hover {
+	border-left-color: var(--accent-blue);
+	transform: translateY(-1px);
+}
+
+.oyun-card-meta,
+.oyun-card-actions {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.oyun-card-meta {
+	color: var(--text-muted);
+	font-size: 0.82rem;
+}
+
+.oyun-card-meta .category-tag {
+	display: inline-block;
+	color: var(--accent-blue);
+	background: rgba(74, 163, 255, 0.12);
+	border-color: rgba(74, 163, 255, 0.3);
+}
+
+.oyun-favorite {
+	color: var(--accent-gold);
+	font-size: 1.1rem;
+	min-width: 38px;
+	padding: 4px 8px;
+	border-color: rgba(241, 196, 15, 0.35);
+	background: rgba(241, 196, 15, 0.08);
+}
+
+.oyun-card-actions .btn-action {
+	font-size: 0.78rem;
+	padding: 5px 9px;
+}
+
+.oyun-card.done-today {
+	border-left-color: var(--accent-green);
+}
+
+@media (max-width: 560px) {
+	.oyun-toolbar {
+		grid-template-columns: 1fr;
+	}
+}

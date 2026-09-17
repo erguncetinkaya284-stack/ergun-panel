@@ -50,6 +50,25 @@
                     <select id="instrument-instrument-cat"></select>
                     <select id="instrument-lesson-cat"></select>
                 </div>
+                <div class="form-row">
+                    <input type="number" id="instrument-practice-minutes" min="1" placeholder="Çalışma süresi (dakika)">
+                    <input type="number" id="instrument-bpm" min="1" placeholder="Metronom / BPM (opsiyonel)">
+                </div>
+                <div class="form-row">
+                    <select id="instrument-difficulty">
+                        <option value="">Zorluk seviyesi</option>
+                        <option value="1">1 - Başlangıç</option>
+                        <option value="2">2 - Kolay</option>
+                        <option value="3">3 - Orta</option>
+                        <option value="4">4 - Zor</option>
+                        <option value="5">5 - İleri</option>
+                    </select>
+                    <select id="instrument-progress">
+                        <option value="Başlangıç">Başlangıç</option>
+                        <option value="Çalışılıyor">Çalışılıyor</option>
+                        <option value="Tamamlandı">Tamamlandı</option>
+                    </select>
+                </div>
                 <button class="btn-action btn-primary" id="instrument-save-btn" onclick="saveInstrumentItem()">Kaydet</button>
             </div>
 

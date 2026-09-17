@@ -11,6 +11,128 @@
         let belgeIdCounter = 1;
         let havaNotlari = []; // {id, date, note}
         let havaNoteIdCounter = 1;
+        let tarimMachines = []; // {id, name, type, pricing}
+        let tarimMachineIdCounter = 1;
+        let tarimServiceJobs = [];
+        let tarimServiceJobIdCounter = 1;
+
+        function tarimNumber(id) {
+            return parseFloat((document.getElementById(id)?.value || '').replace(',', '.')) || 0;
+        }
+
+        function formatTarimMoney(value) {
+            return `${Number(value || 0).toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺`;
+        }
+
+        function tarimJobTotals(values) {
+            const serviceTotal = values.quantity * values.unitPrice;
+            const productTotal = values.productQuantity * values.productPrice;
+            const expenses = values.fuel + values.labor + values.transport;
+            const net = productTotal - serviceTotal - expenses;
+            return { serviceTotal, productTotal, expenses, net };
+        }
+
+        function getTarimJobFormValues() {
+            const values = {
+                customer: document.getElementById('tarim-job-customer').value.trim(),
+                fieldId: parseInt(document.getElementById('tarim-job-field').value) || null,
+                date: document.getElementById('tarim-job-date').value || todayStr(),
+                machineId: parseInt(document.getElementById('tarim-job-machine').value) || null,
+                work: document.getElementById('tarim-job-work').value.trim(),
+                quantity: tarimNumber('tarim-job-quantity'),
+                unitPrice: tarimNumber('tarim-job-unit-price'),
+                fuel: tarimNumber('tarim-job-fuel'),
+                labor: tarimNumber('tarim-job-labor'),
+                transport: tarimNumber('tarim-job-transport'),
+                product: document.getElementById('tarim-job-product').value.trim(),
+                productQuantity: tarimNumber('tarim-job-product-quantity'),
+                productUnit: document.getElementById('tarim-job-product-unit').value.trim(),
+                productPrice: tarimNumber('tarim-job-product-price'),
+                status: document.getElementById('tarim-job-status').value,
+                note: document.getElementById('tarim-job-note').value.trim()
+            };
+            return { ...values, ...tarimJobTotals(values) };
+        }
+
+        function tarimJobResultText(net) {
+            if (net > 0) return `Müşteri sana ${formatTarimMoney(net)} ödeyecek`;
+            if (net < 0) return `Sen müşteriye ${formatTarimMoney(Math.abs(net))} ödeyeceksin`;
+            return 'Hesap kapandı';
+        }
+
+        function updateTarimJobPreview() {
+            const preview = document.getElementById('tarim-job-preview');
+            if (!preview) return;
+            const values = getTarimJobFormValues();
+            preview.innerHTML = `Hizmet: ${formatTarimMoney(values.serviceTotal)} · Ürün: ${formatTarimMoney(values.productTotal)} · Gider: ${formatTarimMoney(values.expenses)} · <strong>${tarimJobResultText(values.net)}</strong>`;
+        }
+
+        function addTarimMachine() {
+            const name = document.getElementById('tarim-machine-name').value.trim();
+            const type = document.getElementById('tarim-machine-type').value.trim();
+            const pricing = document.getElementById('tarim-machine-pricing').value;
+            if (!name) { alert('Makine adı boş olamaz.'); return; }
+            tarimMachines.push({ id: tarimMachineIdCounter++, name, type, pricing });
+            document.getElementById('tarim-machine-name').value = '';
+            document.getElementById('tarim-machine-type').value = '';
+            renderTarim();
+        }
+
+        function removeTarimMachine(id) {
+            if (!confirm('Bu makine silinecek. Eski iş kayıtları korunur. Emin misin?')) return;
+            tarimMachines = tarimMachines.filter(machine => machine.id !== id);
+            renderTarim();
+        }
+
+        function resetTarimServiceForm() {
+            ['tarim-job-customer', 'tarim-job-work', 'tarim-job-quantity', 'tarim-job-unit-price', 'tarim-job-fuel', 'tarim-job-labor', 'tarim-job-transport', 'tarim-job-product', 'tarim-job-product-quantity', 'tarim-job-product-unit', 'tarim-job-product-price', 'tarim-job-note'].forEach(id => { document.getElementById(id).value = ''; });
+            document.getElementById('tarim-job-date').value = todayStr();
+            document.getElementById('tarim-job-status').value = 'Bekliyor';
+            updateTarimJobPreview();
+        }
+
+        function addTarimServiceJob() {
+            const values = getTarimJobFormValues();
+            if (!values.customer) { alert('İş sahibi / müşteri gir.'); return; }
+            if (!values.work) { alert('Yapılan işi gir.'); return; }
+            if (!values.quantity || !values.unitPrice) { alert('Hizmet miktarı ve birim fiyatı gir.'); return; }
+            const job = { id: tarimServiceJobIdCounter++, ...values, cariSynced: false };
+            tarimServiceJobs.push(job);
+            resetTarimServiceForm();
+            renderTarim();
+        }
+
+        function removeTarimServiceJob(id) {
+            tarimServiceJobs = tarimServiceJobs.filter(job => job.id !== id);
+            renderTarim();
+        }
+
+        function addTarimJobToDailyProgram(id) {
+            const job = tarimServiceJobs.find(item => item.id === id);
+            if (!job || typeof addToDailyProgram !== 'function') return;
+            addToDailyProgram(`${job.work} işi - ${job.customer}`);
+        }
+
+        async function syncTarimJobToCari(id) {
+            const job = tarimServiceJobs.find(item => item.id === id);
+            if (!job || job.cariSynced) return;
+            const raw = await persistGet('app-full-data');
+            const snapshot = raw ? JSON.parse(raw) : {};
+            snapshot.cariCustomers = Array.isArray(snapshot.cariCustomers) ? snapshot.cariCustomers : [];
+            snapshot.cariCustomerIdCounter = snapshot.cariCustomerIdCounter || 1;
+            snapshot.cariTx = Array.isArray(snapshot.cariTx) ? snapshot.cariTx : [];
+            snapshot.cariTxIdCounter = snapshot.cariTxIdCounter || 1;
+            let customer = snapshot.cariCustomers.find(item => item.name === job.customer);
+            if (!customer) {
+                customer = { id: snapshot.cariCustomerIdCounter++, name: job.customer };
+                snapshot.cariCustomers.push(customer);
+            }
+            snapshot.cariTx.push({ id: snapshot.cariTxIdCounter++, customerId: customer.id, type: job.net >= 0 ? 'borc' : 'tahsilat', amount: Math.abs(job.net), note: `Tarım mahsup: ${job.work} (${job.date})` });
+            await persistSet('app-full-data', JSON.stringify(snapshot));
+            job.cariSynced = true;
+            renderTarimServiceJobs();
+            alert('Cari Hesap modülüne kayıt aktarıldı.');
+        }
 
         function addTarla() {
             const name = document.getElementById('tarla-name').value.trim();
@@ -258,9 +380,85 @@
             `).join('') : '<span style="color:var(--text-muted); font-size:0.8rem;">Henüz not eklenmedi.</span>';
         }
 
+        function renderTarimMachineSection() {
+            const list = document.getElementById('tarim-machine-list');
+            const machineSelect = document.getElementById('tarim-job-machine');
+            const fieldSelect = document.getElementById('tarim-job-field');
+            if (!list || !machineSelect || !fieldSelect) return;
+            list.innerHTML = tarimMachines.length ? tarimMachines.map(machine => `
+                <span class="tarim-machine-tag">🚜 ${machine.name}${machine.type ? ` · ${machine.type}` : ''} · ${machine.pricing}<button class="btn-action" style="padding:1px 5px; color:var(--accent-red);" onclick="removeTarimMachine(${machine.id})">✕</button></span>
+            `).join('') : '<span style="color:var(--text-muted); font-size:0.8rem;">Henüz makine eklenmedi.</span>';
+            machineSelect.innerHTML = tarimMachines.length
+                ? tarimMachines.map(machine => `<option value="${machine.id}">${machine.name} (${machine.pricing})</option>`).join('')
+                : '<option value="">Önce makine ekle</option>';
+            fieldSelect.innerHTML = tarlalar.length
+                ? '<option value="">Tarla seç (opsiyonel)</option>' + tarlalar.map(field => `<option value="${field.id}">${field.name}</option>`).join('')
+                : '<option value="">Önce tarla ekle</option>';
+            const date = document.getElementById('tarim-job-date');
+            if (date && !date.value) date.value = todayStr();
+        }
+
+        function renderTarimJobFilters() {
+            const filters = [
+                ['tarim-job-customer-filter', [...new Set(tarimServiceJobs.map(job => job.customer))]],
+                ['tarim-job-machine-filter', [...new Set(tarimServiceJobs.map(job => tarimMachines.find(machine => machine.id === job.machineId)?.name).filter(Boolean))]],
+                ['tarim-job-work-filter', [...new Set(tarimServiceJobs.map(job => job.work).filter(Boolean))]],
+                ['tarim-job-status-filter', [...new Set(tarimServiceJobs.map(job => job.status).filter(Boolean))]]
+            ];
+            filters.forEach(([id, values]) => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                const selected = select.value;
+                const label = id.includes('customer') ? 'Tüm müşteriler' : id.includes('machine') ? 'Tüm makineler' : id.includes('work') ? 'Tüm işler' : 'Tüm durumlar';
+                select.innerHTML = `<option value="all">${label}</option>` + values.sort((a, b) => a.localeCompare(b, 'tr')).map(value => `<option value="${value.replace(/"/g, '&quot;')}">${value}</option>`).join('');
+                select.value = values.includes(selected) ? selected : 'all';
+            });
+        }
+
+        function renderTarimServiceJobs() {
+            const wrap = document.getElementById('tarim-service-job-list');
+            const statsWrap = document.getElementById('tarim-job-stats');
+            if (!wrap || !statsWrap) return;
+            renderTarimJobFilters();
+            const search = (document.getElementById('tarim-job-search')?.value || '').trim().toLocaleLowerCase('tr-TR');
+            const customer = document.getElementById('tarim-job-customer-filter')?.value || 'all';
+            const machine = document.getElementById('tarim-job-machine-filter')?.value || 'all';
+            const work = document.getElementById('tarim-job-work-filter')?.value || 'all';
+            const status = document.getElementById('tarim-job-status-filter')?.value || 'all';
+            const visible = tarimServiceJobs.slice().reverse().filter(job => {
+                const machineName = tarimMachines.find(item => item.id === job.machineId)?.name || '';
+                const searchable = `${job.customer} ${job.work} ${job.product} ${machineName} ${job.note}`.toLocaleLowerCase('tr-TR');
+                return (!search || searchable.includes(search)) && (customer === 'all' || job.customer === customer) && (machine === 'all' || machineName === machine) && (work === 'all' || job.work === work) && (status === 'all' || job.status === status);
+            });
+            const totals = tarimServiceJobs.reduce((sum, job) => ({
+                service: sum.service + job.serviceTotal,
+                product: sum.product + job.productTotal,
+                expenses: sum.expenses + job.expenses,
+                receivable: sum.receivable + (['Ödendi', 'Mahsup edildi'].includes(job.status) ? 0 : Math.max(0, job.net)),
+                payable: sum.payable + (['Ödendi', 'Mahsup edildi'].includes(job.status) ? 0 : Math.max(0, -job.net)),
+                earnings: sum.earnings + job.serviceTotal - job.expenses
+            }), { service: 0, product: 0, expenses: 0, receivable: 0, payable: 0, earnings: 0 });
+            statsWrap.innerHTML = [['Hizmet geliri', totals.service], ['Ürün alımı', totals.product], ['Toplam gider', totals.expenses], ['Bekleyen alacak', totals.receivable], ['Net kazanç', totals.earnings]].map(([label, value]) => `<div class="tarim-job-stat"><strong>${formatTarimMoney(value)}</strong><span>${label}</span></div>`).join('');
+            wrap.innerHTML = visible.length ? visible.map(job => {
+                const machineName = tarimMachines.find(item => item.id === job.machineId)?.name || 'Makine belirtilmedi';
+                const fieldName = tarlalar.find(field => field.id === job.fieldId)?.name || 'Tarla belirtilmedi';
+                return `<div class="prayer-card tarim-job-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;"><strong>🚜 ${job.work} — ${job.customer}</strong><span class="category-tag">${job.status}</span></div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">${job.date} · ${fieldName} · ${machineName}</div>
+                    <div style="font-size:0.82rem;">Hizmet: ${formatTarimMoney(job.serviceTotal)} · Ürün: ${formatTarimMoney(job.productTotal)} · Gider: ${formatTarimMoney(job.expenses)}</div>
+                    <strong style="color:${job.net >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">${tarimJobResultText(job.net)}</strong>
+                    ${job.product ? `<div style="font-size:0.8rem; color:var(--text-muted);">Alınan: ${job.productQuantity} ${job.productUnit || 'birim'} ${job.product} × ${formatTarimMoney(job.productPrice)}</div>` : ''}
+                    ${job.note ? `<div style="font-size:0.8rem;">${job.note.replace(/</g, '&lt;')}</div>` : ''}
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;"><button class="btn-action" onclick="syncTarimJobToCari(${job.id})">${job.cariSynced ? '✓ Cari Aktarıldı' : '📒 Cari Hesaba Aktar'}</button><button class="btn-action" onclick="addTarimJobToDailyProgram(${job.id})">📅 Günlük Programa Ekle</button><button class="btn-action" style="color:var(--accent-red)" onclick="removeTarimServiceJob(${job.id})">Sil</button></div>
+                </div>`;
+            }).join('') : '<span style="color:var(--text-muted); font-size:0.85rem;">Filtreye uygun iş kaydı yok.</span>';
+        }
+
         function renderTarim() {
             renderTarlaList();
             renderHasatList();
+            renderTarimMachineSection();
+            renderTarimServiceJobs();
             renderSulamaList();
             const allTohumTypes = renderTohumTypeTags();
             renderTohumSummary(allTohumTypes);

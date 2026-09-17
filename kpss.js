@@ -7,12 +7,19 @@
         let kpssUnitIdCounter = 1;
         let kpssQuestionIdCounter = 1;
         let kpssQuizAnswers = {}; // {unitId: {questionId: optionIndex}}
+        let kpssCollapsedSubjects = {};
+
+        try {
+            kpssCollapsedSubjects = JSON.parse(localStorage.getItem('kpss-collapsed-subjects') || '{}') || {};
+        } catch (e) {
+            kpssCollapsedSubjects = {};
+        }
 
         function addKpssSubject() {
             const input = document.getElementById('new-kpss-subject');
             const name = input.value.trim();
             if (!name) { alert('Ders adı boş olamaz.'); return; }
-            kpssSubjects.push({ id: kpssSubjectIdCounter++, name, collapsed: false });
+            kpssSubjects.push({ id: kpssSubjectIdCounter++, name });
             input.value = '';
             renderKpss();
         }
@@ -26,32 +33,22 @@
             renderKpss();
         }
 
-        function toggleKpssSubjectCollapse(id) {
-            const s = kpssSubjects.find(x => x.id === id);
-            if (!s) return;
-            s.collapsed = !s.collapsed;
-            renderKpss();
-        }
-
-        function toggleKpssTopicCollapse(id) {
-            const t = kpssTopics.find(x => x.id === id);
-            if (!t) return;
-            t.collapsed = !t.collapsed;
-            renderKpss();
-        }
-
-        function toggleKpssUnitCollapse(id) {
-            const u = kpssUnits.find(x => x.id === id);
-            if (!u) return;
-            u.collapsed = !u.collapsed;
-            renderKpss();
+        function toggleKpssSubject(arrow) {
+            const card = arrow.closest('.kpss-subject-card');
+            const subjectId = card.dataset.subjectId;
+            const collapsed = card.classList.toggle('collapsed');
+            kpssCollapsedSubjects[subjectId] = collapsed;
+            try {
+                localStorage.setItem('kpss-collapsed-subjects', JSON.stringify(kpssCollapsedSubjects));
+            } catch (e) {
+            }
         }
 
         function addKpssTopic(subjectId) {
             const input = document.getElementById('new-kpss-topic-' + subjectId);
             const name = input.value.trim();
             if (!name) { alert('Konu adı boş olamaz.'); return; }
-            kpssTopics.push({ id: kpssTopicIdCounter++, subjectId, name, collapsed: false });
+            kpssTopics.push({ id: kpssTopicIdCounter++, subjectId, name });
             renderKpss();
         }
 
@@ -75,8 +72,7 @@
                 saved: false,
                 showTechniques: false,
                 quizMode: false,
-                quizResult: null,
-                collapsed: false
+                quizResult: null
             });
             input.value = '';
             renderKpss();
@@ -106,10 +102,8 @@
             });
         }
 
-        function harvestAllOpenKpssUnitForms(excludeUnitId) {
-            // excludeUnitId: bu ünite az önce programatik olarak güncellendiyse (toplu yapıştırma vb.)
-            // onu tekrar DOM'dan okuyup üzerine ESKİ değerle yazmayı engeller.
-            kpssUnits.forEach(u => { if (!u.saved && u.id !== excludeUnitId) harvestKpssUnitForm(u.id); });
+        function harvestAllOpenKpssUnitForms() {
+            kpssUnits.forEach(u => { if (!u.saved) harvestKpssUnitForm(u.id); });
         }
 
         function addKpssQuestion(unitId) {
@@ -118,7 +112,7 @@
             if (unit.questions.length >= 40) { alert('En fazla 40 soru ekleyebilirsin.'); return; }
             harvestKpssUnitForm(unitId);
             unit.questions.push({ id: kpssQuestionIdCounter++, text: '', options: ['', '', '', '', ''], correct: null });
-            renderKpss(unitId);
+            renderKpss();
         }
 
         function removeKpssQuestion(unitId, questionId) {
@@ -126,7 +120,7 @@
             if (!unit) return;
             harvestKpssUnitForm(unitId);
             unit.questions = unit.questions.filter(q => q.id !== questionId);
-            renderKpss(unitId);
+            renderKpss();
         }
 
         function saveKpssUnit(unitId) {
@@ -150,68 +144,38 @@
             const raw = box.value;
             if (!raw.trim()) { alert('Önce soru metnini yapıştır.'); return; }
 
-            // Birden fazla soru "Soru 1.:", "Soru 2.:" gibi başlıklarla ayrılmışsa hepsi ayrı
-            // ayrı ayrıştırılır. Böyle bir başlık yoksa (tek soru yapıştırıldıysa) tüm metin
-            // tek soru sayılır.
-            const blocks = raw.split(/\n(?=\s*Soru\s*\d+\s*[\.:])/i).map(b => b.trim()).filter(b => b);
-            const questionBlocks = blocks.length ? blocks : [raw];
-
-            const unit = kpssUnits.find(u => u.id === unitId);
-            if (!unit) return;
-            harvestKpssUnitForm(unitId);
-
+            const lines = raw.split('\n').map(l => l.trim()).filter(l => l !== '');
             const optionRegex = /^([A-Ea-e])[\)\.\-]\s*(.+)$/;
-            const answerRegex = /^(cevap|doğru cevap|dogru cevap)\s*[:\-]?/i;
-            let addedCount = 0;
-            let skippedCount = 0;
+            let questionLines = [];
+            const options = ['', '', '', '', ''];
+            let correct = null;
+            let mode = 'question';
 
-            questionBlocks.forEach(blockRaw => {
-                if (unit.questions.length >= 40) { skippedCount++; return; }
-
-                const lines = blockRaw.split('\n').map(l => l.trim()).filter(l => l !== '');
-                let questionLines = [];
-                const options = ['', '', '', '', ''];
-                let correct = null;
-                let mode = 'question';
-
-                lines.forEach(line => {
-                    // "Cevap: B" formatını yakalarken, sadece "cevap" kelimesinin KENDİSİNİ değil
-                    // (içinde 'C' harfi geçiyor ve A-E aralığına yanlışlıkla eşleşiyordu - asıl bug buydu),
-                    // "cevap" ifadesinden SONRA gelen harfi hedefleyen tek bir regex kullanıyoruz.
-                    const answerMatch = line.match(/^(?:cevap|doğru cevap|dogru cevap)\s*[:\-]?\s*([A-Ea-e])/i);
-                    if (answerMatch) {
-                        correct = answerMatch[1].toUpperCase().charCodeAt(0) - 65;
-                        return;
-                    }
-                    const optMatch = line.match(optionRegex);
-                    if (optMatch) {
-                        const idx = optMatch[1].toUpperCase().charCodeAt(0) - 65;
-                        if (idx >= 0 && idx < 5) options[idx] = optMatch[2].trim();
-                        mode = 'options';
-                        return;
-                    }
-                    if (mode === 'question') {
-                        const cleaned = line.replace(/^\s*Soru\s*\d+\s*[\.:]*\s*/i, '').trim();
-                        if (cleaned) questionLines.push(cleaned);
-                    }
-                });
-
-                const questionText = questionLines.join(' ').trim();
-                if (!questionText) return;
-
-                unit.questions.push({ id: kpssQuestionIdCounter++, text: questionText, options, correct });
-                addedCount++;
+            lines.forEach(line => {
+                const answerMatch = line.match(/^(?:cevap|doğru cevap|dogru cevap)\s*[:\-]?\s*([A-Ea-e])/i);
+                if (answerMatch) {
+                    correct = answerMatch[1].toUpperCase().charCodeAt(0) - 65;
+                    return;
+                }
+                const optMatch = line.match(optionRegex);
+                if (optMatch) {
+                    const idx = optMatch[1].toUpperCase().charCodeAt(0) - 65;
+                    if (idx >= 0 && idx < 5) options[idx] = optMatch[2].trim();
+                    mode = 'options';
+                    return;
+                }
+                if (mode === 'question') questionLines.push(line);
             });
 
+            const questionText = questionLines.join(' ').trim();
+            if (!questionText) { alert('Soru metni ayrıştırılamadı. Format: önce soru cümlesi, sonra "A) ..." satırları.'); return; }
+
+            harvestKpssUnitForm(unitId);
+            const unit = kpssUnits.find(u => u.id === unitId);
+            if (!unit) return;
+            unit.questions.push({ id: kpssQuestionIdCounter++, text: questionText, options, correct });
             box.value = '';
-            if (addedCount === 0) {
-                alert('Hiçbir soru ayrıştırılamadı. Format: her soru "Soru 1.:" ile başlasın, altında A) - E) şıkları ve "Cevap: X" satırı olsun.');
-            } else if (skippedCount > 0) {
-                alert(addedCount + ' soru eklendi. ' + skippedCount + ' soru 40 sınırı nedeniyle eklenemedi.');
-            } else {
-                alert(addedCount + ' soru eklendi.');
-            }
-            renderKpss(unitId);
+            renderKpss();
         }
 
         // --- Toplu yapıştırma: "1. ... 2. ..." biçimindeki tüm teknikleri tek seferde ayrıştırıp doldurma ---
@@ -238,7 +202,7 @@
             }
 
             box.value = '';
-            renderKpss(unitId);
+            renderKpss();
         }
 
         function toggleKpssTechniques(unitId) {
@@ -368,31 +332,18 @@
         }
 
         function renderKpssUnitSummary(unit) {
-            const questionCount = unit.questions.filter(q => q.text.trim()).length;
-            const arrowStyle = unit.collapsed ? 'transform:rotate(-90deg);' : '';
-            const arrowHtml = `<span class="toggle-arrow" style="${arrowStyle}" onclick="toggleKpssUnitCollapse(${unit.id})">▶</span>`;
-
-            if (unit.collapsed) {
-                return `
-                <div class="prayer-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                        <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📝 ${unit.name}</strong>
-                        <span style="font-size:0.8rem; color:var(--text-muted);">${questionCount} soru</span>
-                    </div>
-                </div>`;
-            }
-
             const techniquesHtml = unit.showTechniques
                 ? `<div style="display:flex; flex-direction:column; gap:6px; margin-top:8px; border-top:1px solid var(--border-color); padding-top:8px;">
                     ${unit.techniques.map((t, i) => t.trim() ? `<div style="font-size:0.8rem;"><strong>Teknik ${i + 1}:</strong> ${t.replace(/</g, '&lt;')}</div>` : '').join('') || '<span style="color:var(--text-muted); font-size:0.8rem;">Henüz teknik notu girilmedi.</span>'}
                    </div>`
                 : '';
             const quizHtml = unit.quizMode ? renderKpssQuiz(unit) : '';
+            const questionCount = unit.questions.filter(q => q.text.trim()).length;
 
             return `
             <div class="prayer-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📝 ${unit.name}</strong>
+                    <strong>📝 ${unit.name}</strong>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
                         <button class="btn-action" onclick="toggleKpssTechniques(${unit.id})">${unit.showTechniques ? '11 Tekniği Gizle' : '11 Tekniği Oku'}</button>
                         <button class="btn-action btn-primary" onclick="startKpssQuiz(${unit.id})">Sınava Başla</button>
@@ -412,23 +363,10 @@
 
         function renderKpssTopicCard(topic) {
             const units = kpssUnits.filter(u => u.topicId === topic.id);
-            const arrowStyle = topic.collapsed ? 'transform:rotate(-90deg);' : '';
-            const arrowHtml = `<span class="toggle-arrow" style="${arrowStyle}" onclick="toggleKpssTopicCollapse(${topic.id})">▶</span>`;
-
-            if (topic.collapsed) {
-                return `
-                <div class="prayer-card" style="border-color:var(--accent-blue);">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📂 ${topic.name}</strong>
-                        <span style="font-size:0.8rem; color:var(--text-muted);">${units.length} ders birimi</span>
-                    </div>
-                </div>`;
-            }
-
             return `
             <div class="prayer-card" style="border-color:var(--accent-blue);">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📂 ${topic.name}</strong>
+                    <strong>📂 ${topic.name}</strong>
                     <button class="btn-action" style="color:var(--accent-red)" onclick="removeKpssTopic(${topic.id})">Konuyu Sil</button>
                 </div>
                 <div class="form-row">
@@ -443,25 +381,13 @@
 
         function renderKpssSubjectCard(subject) {
             const topics = kpssTopics.filter(t => t.subjectId === subject.id);
-            const arrowStyle = subject.collapsed ? 'transform:rotate(-90deg);' : '';
-            const arrowHtml = `<span class="toggle-arrow" style="${arrowStyle}" onclick="toggleKpssSubjectCollapse(${subject.id})">▶</span>`;
-
-            if (subject.collapsed) {
-                return `
-                <div class="prayer-card" style="border-color:var(--accent-gold);">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📖 ${subject.name}</strong>
-                        <span style="font-size:0.8rem; color:var(--text-muted);">${topics.length} konu</span>
-                    </div>
-                </div>`;
-            }
-
             return `
-            <div class="prayer-card" style="border-color:var(--accent-gold);">
+            <div class="prayer-card kpss-subject-card${kpssCollapsedSubjects[subject.id] ? ' collapsed' : ''}" data-subject-id="${subject.id}" style="border-color:var(--accent-gold);">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong style="display:flex; align-items:center; gap:6px;">${arrowHtml} 📖 ${subject.name}</strong>
+                    <strong><span class="toggle-arrow" onclick="toggleKpssSubject(this)">▶</span>📖 ${subject.name}</strong>
                     <button class="btn-action" style="color:var(--accent-red)" onclick="removeKpssSubject(${subject.id})">Dersi Sil</button>
                 </div>
+                <div class="kpss-subject-content">
                 <div class="form-row">
                     <input type="text" id="new-kpss-topic-${subject.id}" placeholder="Konu adı (örn: Asal Sayılar)">
                     <button class="btn-action btn-primary" onclick="addKpssTopic(${subject.id})">+ Konu Ekle</button>
@@ -469,11 +395,12 @@
                 <div style="display:flex; flex-direction:column; gap:10px;">
                     ${topics.length ? topics.map(renderKpssTopicCard).join('') : '<span style="color:var(--text-muted); font-size:0.8rem;">Henüz konu eklenmedi.</span>'}
                 </div>
+                </div>
             </div>`;
         }
 
-        function renderKpss(excludeUnitId) {
-            harvestAllOpenKpssUnitForms(excludeUnitId);
+        function renderKpss() {
+            harvestAllOpenKpssUnitForms();
             const wrap = document.getElementById('kpss-subjects-list');
             wrap.innerHTML = kpssSubjects.length
                 ? kpssSubjects.map(renderKpssSubjectCard).join('')
