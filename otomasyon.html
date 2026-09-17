@@ -97,8 +97,18 @@
 <body>
 <div class="wrap">
   <p style="margin:0 0 10px;"><a href="index.html" style="color:var(--accent-dark); text-decoration:none; font-size:0.85rem;">← Ergün Panel'e dön</a></p>
-  <h1>🧩 YKS Panel — Başlık Ekleme Otomasyonu</h1>
-  <p class="sub">Panelden otomatik yükle (ya da yedek .json yükle) → ders/bölüm seç → başlıkları yapıştır ya da AI'a ürettir → doğrudan panele kaydet.</p>
+  <h1>🧩 Başlık Ekleme Otomasyonu</h1>
+  <p class="sub">Hedef modülü seç → panelden otomatik yükle (ya da yedek .json yükle) → ders/bölüm seç → başlıkları yapıştır ya da AI'a ürettir → doğrudan panele kaydet.</p>
+
+  <div class="card">
+    <h2><span class="step-num">0</span> Hedef modül</h2>
+    <label for="targetModuleSelect">Başlıkları hangi modüle ekleyeceksin?</label>
+    <select id="targetModuleSelect">
+      <option value="yks">🎓 YKS Takibi</option>
+      <option value="kpss">📚 KPSS Takibi</option>
+      <option value="ders">📖 Ders Takibi</option>
+    </select>
+  </div>
 
   <div class="card">
     <h2><span class="step-num">1</span> Panel verisini yükle</h2>
@@ -232,6 +242,18 @@
 
   let panelData = null;
   let sessionAdds = [];
+
+  // Hedef modüle göre alan adlarını üretir (yks/kpss/ders hepsi aynı şemayı paylaşıyor)
+  function currentPrefix() {
+    return $("targetModuleSelect").value;
+  }
+  function F(base) {
+    return currentPrefix() + base;
+  }
+  function moduleLabel() {
+    const opt = $("targetModuleSelect").selectedOptions[0];
+    return opt ? opt.textContent : currentPrefix();
+  }
   const $ = (id) => document.getElementById(id);
 
   // ---------- Template ----------
@@ -275,18 +297,18 @@
       const raw = await persistGet('app-full-data');
       if (!raw) throw new Error("Panelde henüz kayıtlı veri bulunamadı. Önce panelde bir modülü açıp bir şey kaydetmiş olman gerekir.");
       const data = JSON.parse(raw);
-      if (!Array.isArray(data.yksSubjects) || !Array.isArray(data.yksTopics) || !Array.isArray(data.yksUnits)) {
-        // YKS henüz hiç kullanılmamışsa bu alanlar olmayabilir — boş diziler olarak başlat
-        data.yksSubjects = data.yksSubjects || [];
-        data.yksTopics = data.yksTopics || [];
-        data.yksUnits = data.yksUnits || [];
-        data.yksSubjectIdCounter = data.yksSubjectIdCounter || 1;
-        data.yksTopicIdCounter = data.yksTopicIdCounter || 1;
-        data.yksUnitIdCounter = data.yksUnitIdCounter || 1;
-        data.yksQuestionIdCounter = data.yksQuestionIdCounter || 1;
+      if (!Array.isArray(data[F('Subjects')]) || !Array.isArray(data[F('Topics')]) || !Array.isArray(data[F('Units')])) {
+        // Bu modül henüz hiç kullanılmamışsa bu alanlar olmayabilir — boş diziler olarak başlat
+        data[F('Subjects')] = data[F('Subjects')] || [];
+        data[F('Topics')] = data[F('Topics')] || [];
+        data[F('Units')] = data[F('Units')] || [];
+        data[F('SubjectIdCounter')] = data[F('SubjectIdCounter')] || 1;
+        data[F('TopicIdCounter')] = data[F('TopicIdCounter')] || 1;
+        data[F('UnitIdCounter')] = data[F('UnitIdCounter')] || 1;
+        data[F('QuestionIdCounter')] = data[F('QuestionIdCounter')] || 1;
       }
       panelData = data;
-      showStatus("loadStatus", "ok", `Panelden yüklendi ✓ — ${data.yksSubjects.length} ders, ${data.yksTopics.length} bölüm/konu, ${data.yksUnits.length} başlık mevcut.`);
+      showStatus("loadStatus", "ok", `${moduleLabel()} — panelden yüklendi ✓ — ${data[F('Subjects')].length} ders, ${data[F('Topics')].length} bölüm/konu, ${data[F('Units')].length} başlık mevcut.`);
       populateSubjects();
       ["selectCard", "modeCard", "sessionCard", "downloadCard"].forEach((id) => ($(id).style.display = "block"));
       $("downloadBtn").disabled = false;
@@ -306,11 +328,11 @@
     reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target.result);
-        if (!Array.isArray(data.yksSubjects) || !Array.isArray(data.yksTopics) || !Array.isArray(data.yksUnits)) {
-          throw new Error("Bu dosyada yksSubjects / yksTopics / yksUnits alanları bulunamadı.");
+        if (!Array.isArray(data[F('Subjects')]) || !Array.isArray(data[F('Topics')]) || !Array.isArray(data[F('Units')])) {
+          throw new Error(`Bu dosyada ${F('Subjects')} / ${F('Topics')} / ${F('Units')} alanları bulunamadı. Doğru hedef modülü seçtiğinden emin ol.`);
         }
         panelData = data;
-        showStatus("loadStatus", "ok", `Yüklendi ✓ — ${data.yksSubjects.length} ders, ${data.yksTopics.length} bölüm/konu, ${data.yksUnits.length} başlık mevcut.`);
+        showStatus("loadStatus", "ok", `Yüklendi ✓ — ${data[F('Subjects')].length} ders, ${data[F('Topics')].length} bölüm/konu, ${data[F('Units')].length} başlık mevcut.`);
         populateSubjects();
         ["selectCard", "modeCard", "sessionCard", "downloadCard"].forEach((id) => ($(id).style.display = "block"));
         $("downloadBtn").disabled = false;
@@ -329,7 +351,7 @@
   function populateSubjects() {
     const sel = $("subjectSelect");
     sel.innerHTML = "";
-    panelData.yksSubjects.slice().sort((a, b) => a.id - b.id).forEach((s) => {
+    panelData[F('Subjects')].slice().sort((a, b) => a.id - b.id).forEach((s) => {
       const opt = document.createElement("option");
       opt.value = s.id; opt.textContent = `${s.id}. ${s.name}`;
       sel.appendChild(opt);
@@ -342,7 +364,7 @@
     const subjectId = parseInt($("subjectSelect").value, 10);
     const sel = $("topicSelect");
     sel.innerHTML = "";
-    panelData.yksTopics.filter((t) => t.subjectId === subjectId).sort((a, b) => a.id - b.id).forEach((t) => {
+    panelData[F('Topics')].filter((t) => t.subjectId === subjectId).sort((a, b) => a.id - b.id).forEach((t) => {
       const opt = document.createElement("option");
       opt.value = t.id; opt.textContent = t.name;
       sel.appendChild(opt);
@@ -374,27 +396,27 @@
     const topicSelVal = $("topicSelect").value;
     const topicOpt = $("topicSelect").selectedOptions[0];
     if (topicSelVal.startsWith("__pending_")) {
-      const nextTopicId = Math.max(0, ...panelData.yksTopics.map((t) => t.id)) + 1;
+      const nextTopicId = Math.max(0, ...panelData[F('Topics')].map((t) => t.id)) + 1;
       const newTopic = { id: nextTopicId, subjectId: subjectId, name: topicOpt.dataset.newName };
-      panelData.yksTopics.push(newTopic);
+      panelData[F('Topics')].push(newTopic);
       populateTopics();
       $("topicSelect").value = String(nextTopicId);
       return { topicId: nextTopicId, topicName: newTopic.name };
     }
     const topicId = parseInt(topicSelVal, 10);
-    const t = panelData.yksTopics.find((tt) => tt.id === topicId);
+    const t = panelData[F('Topics')].find((tt) => tt.id === topicId);
     return { topicId, topicName: t ? t.name : "?" };
   }
 
   // ---------- Core: commit a unit into panelData + session list ----------
   function commitUnit(unitName, techniqueContents, questions) {
     const subjectId = parseInt($("subjectSelect").value, 10);
-    const subject = panelData.yksSubjects.find((s) => s.id === subjectId);
+    const subject = panelData[F('Subjects')].find((s) => s.id === subjectId);
     const { topicId, topicName } = resolveTopicSelection();
 
-    const nextUnitId = Math.max(0, ...panelData.yksUnits.map((u) => u.id)) + 1;
+    const nextUnitId = Math.max(0, ...panelData[F('Units')].map((u) => u.id)) + 1;
     let nextQId = 0;
-    panelData.yksUnits.forEach((u) => (u.questions || []).forEach((q) => (nextQId = Math.max(nextQId, q.id))));
+    panelData[F('Units')].forEach((u) => (u.questions || []).forEach((q) => (nextQId = Math.max(nextQId, q.id))));
     nextQId += 1;
 
     const qs = questions.map((q) => {
@@ -409,7 +431,7 @@
       techniqueContents: techniqueContents.map((v) => v || ""),
       questions: qs, saved: true, showTechniques: false, quizMode: false, quizResult: null,
     };
-    panelData.yksUnits.push(unit);
+    panelData[F('Units')].push(unit);
     sessionAdds.push({ subjectName: subject ? subject.name : "?", topicName, unitName, qCount: qs.length });
     renderSessionList();
     return unit;
@@ -430,8 +452,8 @@
       btn.addEventListener("click", () => {
         const idx = parseInt(btn.dataset.idx, 10);
         const removed = sessionAdds.splice(idx, 1)[0];
-        const uIdx = panelData.yksUnits.findIndex((u) => u.name === removed.unitName && u.questions.length === removed.qCount);
-        if (uIdx !== -1) panelData.yksUnits.splice(uIdx, 1);
+        const uIdx = panelData[F('Units')].findIndex((u) => u.name === removed.unitName && u.questions.length === removed.qCount);
+        if (uIdx !== -1) panelData[F('Units')].splice(uIdx, 1);
         renderSessionList();
       });
     });
@@ -626,7 +648,7 @@ SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:
     setAiRunningUI(true);
     showStatus("aiStatus", "info", `Başladı — ${aiQueue.length} başlık kuyrukta.`);
     const subjectId = parseInt($("subjectSelect").value, 10);
-    const subject = panelData.yksSubjects.find((s) => s.id === subjectId);
+    const subject = panelData[F('Subjects')].find((s) => s.id === subjectId);
     const topicOpt = $("topicSelect").selectedOptions[0];
     const topicName = topicOpt && topicOpt.value !== "__new__" && !String(topicOpt.value).startsWith("__pending_")
       ? topicOpt.textContent
@@ -679,12 +701,24 @@ SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:
   }
 
   // ---------- Step 5: panele kaydet + geri al ----------
-  const UNDO_KEY = 'otomasyon-yks-undo-backup';
+  function undoKey() {
+    return 'otomasyon-' + currentPrefix() + '-undo-backup';
+  }
 
   async function refreshUndoButton() {
-    const backupRaw = await persistGet(UNDO_KEY);
+    const backupRaw = await persistGet(undoKey());
     $("undoBtn").style.display = backupRaw ? "inline-block" : "none";
   }
+  $("targetModuleSelect").addEventListener("change", () => {
+    // Modül değişince oturumu sıfırla, karışıklık olmasın
+    panelData = null; sessionAdds = [];
+    $("sessionListWrap").innerHTML = '<p class="empty-note">Henüz başlık eklenmedi.</p>';
+    ["selectCard", "modeCard", "sessionCard", "downloadCard"].forEach((id) => ($(id).style.display = "none"));
+    $("saveToPanelBtn").disabled = true;
+    $("downloadBtn").disabled = true;
+    showStatus("loadStatus", "info", `Hedef modül "${moduleLabel()}" olarak değişti — veriyi tekrar yükle.`);
+    refreshUndoButton();
+  });
   refreshUndoButton();
 
   $("saveToPanelBtn").addEventListener("click", async () => {
@@ -696,34 +730,33 @@ SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:
     showStatus("saveStatus", "info", "Kaydediliyor...");
     try {
       // Panelin GÜNCEL halini tekrar oku (bu arada başka bir sayfada değişiklik olmuş olabilir),
-      // sadece YKS'ye ait alanları üzerine yaz — diğer modüllerin verisine dokunma.
+      // sadece seçili modüle ait alanları üzerine yaz — diğer modüllerin verisine dokunma.
       const liveRaw = await persistGet('app-full-data');
       const live = liveRaw ? JSON.parse(liveRaw) : {};
 
-      // Geri alma için, ÜZERİNE YAZMADAN ÖNCEKİ YKS verisini yedekle
-      const undoBackup = {
-        yksSubjects: live.yksSubjects || [],
-        yksTopics: live.yksTopics || [],
-        yksUnits: live.yksUnits || [],
-        yksSubjectIdCounter: live.yksSubjectIdCounter || 1,
-        yksTopicIdCounter: live.yksTopicIdCounter || 1,
-        yksUnitIdCounter: live.yksUnitIdCounter || 1,
-        yksQuestionIdCounter: live.yksQuestionIdCounter || 1,
-        yksQuizAnswers: live.yksQuizAnswers || {},
-      };
-      await persistSet(UNDO_KEY, JSON.stringify(undoBackup));
+      // Geri alma için, ÜZERİNE YAZMADAN ÖNCEKİ veriyi yedekle
+      const undoBackup = {};
+      undoBackup[F('Subjects')] = live[F('Subjects')] || [];
+      undoBackup[F('Topics')] = live[F('Topics')] || [];
+      undoBackup[F('Units')] = live[F('Units')] || [];
+      undoBackup[F('SubjectIdCounter')] = live[F('SubjectIdCounter')] || 1;
+      undoBackup[F('TopicIdCounter')] = live[F('TopicIdCounter')] || 1;
+      undoBackup[F('UnitIdCounter')] = live[F('UnitIdCounter')] || 1;
+      undoBackup[F('QuestionIdCounter')] = live[F('QuestionIdCounter')] || 1;
+      undoBackup[F('QuizAnswers')] = live[F('QuizAnswers')] || {};
+      await persistSet(undoKey(), JSON.stringify(undoBackup));
 
-      // YKS alanlarını güncel panel verisinin üzerine yaz
-      live.yksSubjects = panelData.yksSubjects;
-      live.yksTopics = panelData.yksTopics;
-      live.yksUnits = panelData.yksUnits;
-      live.yksSubjectIdCounter = panelData.yksSubjectIdCounter || undoBackup.yksSubjectIdCounter;
-      live.yksTopicIdCounter = panelData.yksTopicIdCounter || undoBackup.yksTopicIdCounter;
-      live.yksUnitIdCounter = panelData.yksUnitIdCounter || undoBackup.yksUnitIdCounter;
-      live.yksQuestionIdCounter = panelData.yksQuestionIdCounter || undoBackup.yksQuestionIdCounter;
+      // Seçili modülün alanlarını güncel panel verisinin üzerine yaz
+      live[F('Subjects')] = panelData[F('Subjects')];
+      live[F('Topics')] = panelData[F('Topics')];
+      live[F('Units')] = panelData[F('Units')];
+      live[F('SubjectIdCounter')] = panelData[F('SubjectIdCounter')] || undoBackup[F('SubjectIdCounter')];
+      live[F('TopicIdCounter')] = panelData[F('TopicIdCounter')] || undoBackup[F('TopicIdCounter')];
+      live[F('UnitIdCounter')] = panelData[F('UnitIdCounter')] || undoBackup[F('UnitIdCounter')];
+      live[F('QuestionIdCounter')] = panelData[F('QuestionIdCounter')] || undoBackup[F('QuestionIdCounter')];
 
       await persistSet('app-full-data', JSON.stringify(live));
-      showStatus("saveStatus", "ok", `Panele kaydedildi ✓ — ${sessionAdds.length} yeni başlık yazıldı. YKS modülünü açtığında (sayfayı yenileyerek) göreceksin.`);
+      showStatus("saveStatus", "ok", `Panele kaydedildi ✓ — ${sessionAdds.length} yeni başlık yazıldı. ${moduleLabel()} modülünü açtığında (sayfayı yenileyerek) göreceksin.`);
       await refreshUndoButton();
     } catch (err) {
       showStatus("saveStatus", "err", "Kaydedilemedi: " + err.message);
@@ -733,18 +766,18 @@ SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:
   });
 
   $("undoBtn").addEventListener("click", async () => {
-    if (!confirm("Son 'Panele Kaydet' işlemini geri almak istediğine emin misin? YKS verisi bir önceki haline döner.")) return;
+    if (!confirm(`Son 'Panele Kaydet' işlemini geri almak istediğine emin misin? ${moduleLabel()} verisi bir önceki haline döner.`)) return;
     try {
-      const backupRaw = await persistGet(UNDO_KEY);
+      const backupRaw = await persistGet(undoKey());
       if (!backupRaw) { showStatus("saveStatus", "err", "Geri alınacak bir kayıt bulunamadı."); return; }
       const backup = JSON.parse(backupRaw);
       const liveRaw = await persistGet('app-full-data');
       const live = liveRaw ? JSON.parse(liveRaw) : {};
       Object.assign(live, backup);
       await persistSet('app-full-data', JSON.stringify(live));
-      await persistSet(UNDO_KEY, ''); // geri alma tek seviyeli — kullanılınca temizlenir
+      await persistSet(undoKey(), ''); // geri alma tek seviyeli — kullanılınca temizlenir
       $("undoBtn").style.display = "none";
-      showStatus("saveStatus", "ok", "Geri alındı ✓ — YKS verisi son kayıttan önceki haline döndü.");
+      showStatus("saveStatus", "ok", `Geri alındı ✓ — ${moduleLabel()} verisi son kayıttan önceki haline döndü.`);
     } catch (err) {
       showStatus("saveStatus", "err", "Geri alınamadı: " + err.message);
     }
